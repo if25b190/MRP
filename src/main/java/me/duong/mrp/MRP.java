@@ -1,9 +1,9 @@
 package me.duong.mrp;
 
 import com.sun.net.httpserver.HttpServer;
+import me.duong.mrp.controller.DefaultHttpHandler;
 import me.duong.mrp.utils.AnnotationScanner;
 import me.duong.mrp.utils.Controller;
-import me.duong.mrp.controller.UserController;
 import me.duong.mrp.utils.Mapping;
 import me.duong.mrp.utils.Request;
 
@@ -12,6 +12,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.util.*;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 public class MRP {
@@ -23,9 +24,8 @@ public class MRP {
 
             HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
 
-            server.createContext("/", new UserController());
-
-            server.setExecutor(null);
+            server.createContext("/", new DefaultHttpHandler());
+            server.setExecutor(Executors.newFixedThreadPool(4));
             server.start();
 
             Logger.info("Server running on port 8080...");
@@ -43,13 +43,12 @@ public class MRP {
                 Logger.error("Controller with method \"%s\" and path \"%s\" has invalid return or parameter types!", methodType, path);
                 return;
             }
-            controllers.put(new Mapping(methodType, path), event -> invokeMethod(method, event));
+            controllers.put(new Mapping(methodType, path), request -> invokeMethod(method, request));
             Logger.info("Registered controller \"%s\" - \"%s\" for \"%s\"!", methodType, path, method.getName());
         });
     }
 
     private static void invokeMethod(Method method, Request request) {
-        Logger.info("Invoked Method \"%\"", method.getName());
         try {
             var access = method.canAccess(null);
             if (!access) {
