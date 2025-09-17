@@ -25,7 +25,7 @@ public class MRP {
             HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
 
             server.createContext("/", new DefaultHttpHandler());
-            server.setExecutor(Executors.newFixedThreadPool(4));
+            server.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
             server.start();
 
             Logger.info("Server running on port 8080...");
@@ -40,11 +40,20 @@ public class MRP {
             var path = method.getAnnotation(Controller.class).path();
             if (method.getParameterCount() != 1 ||
                     method.getParameterTypes()[0] != Request.class) {
-                Logger.error("Controller with method \"%s\" and path \"%s\" has invalid return or parameter types!", methodType, path);
+                Logger.error(
+                        "Controller with method \"%s\" and path \"%s\" has invalid return or parameter types!",
+                        methodType,
+                        path
+                );
                 return;
             }
             controllers.put(new Mapping(methodType, path), request -> invokeMethod(method, request));
-            Logger.info("Registered controller \"%s\" - \"%s\" for \"%s\"!", methodType, path, method.getName());
+            Logger.info(
+                    "Registered controller \"%s\" - \"%s\" for \"%s\"!",
+                    methodType,
+                    path,
+                    method.getName()
+            );
         });
     }
 
@@ -59,7 +68,7 @@ public class MRP {
                 method.setAccessible(false);
             }
         } catch (IllegalAccessException | InvocationTargetException exception) {
-            Logger.error("{}: {}", method.getName(), exception.getMessage());
+            Logger.error("%s: %s", method.getName(), exception.getLocalizedMessage());
         }
     }
 }

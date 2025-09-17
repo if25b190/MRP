@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class DefaultHttpHandler implements HttpHandler {
     @Override
@@ -27,16 +28,41 @@ public class DefaultHttpHandler implements HttpHandler {
         Logger.info("REQUEST: %s - %s", method, path);
         var result = MRP.controllers.entrySet()
                 .stream()
-                .filter(entry -> entry.getKey().method().name().equalsIgnoreCase(method) && entry.getKey().path().equals(path))
-                .map(Map.Entry::getValue)
-                .map(consumer -> {
-                    consumer.accept(new Request(exchange, path, queryParameters, body));
+                .filter(entry ->
+                        entry.getKey().method().name().equalsIgnoreCase(method) &&
+                                matchesPath(entry.getKey().path(), path))
+                .map(entry -> {
+                    var wildcards = extractWildcards(entry.getKey().path(), path);
+                    entry.getValue().accept(new Request(exchange, path, queryParameters, wildcards, body));
                     return 0;
                 }).findAny();
         if (result.isEmpty()) {
             exchange.sendResponseHeaders(404, 0);
             exchange.getResponseBody().close();
         }
+    }
+
+    private boolean matchesPath(String targetPath, String requestPath) {
+        return requestPath.matches(targetPath.replaceAll("/:[A-Za-z0-9]+", "/(.+)"));
+    }
+
+    private Map<String, String> extractWildcards(String targetPath, String requestPath) {
+        Map<String, String> wildcards = new HashMap<>();
+        try {
+            var pattern = Pattern.compile(targetPath.replaceAll("/:[A-Za-z0-9]+", "/(.+)"));
+            var matcher = pattern.matcher(requestPath);
+            var wildcardNames = Pattern
+                    .compile(targetPath.replaceAll("/:[A-Za-z0-9]+", "/:(.+)"))
+                    .matcher(targetPath);
+            int i = 1;
+            while (matcher.find() && wildcardNames.find()) {
+                wildcards.put(wildcardNames.group(i), matcher.group(i));
+                i++;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return wildcards;
     }
 
     private Map<String, List<String>> parseQueryParameters(String query) {
