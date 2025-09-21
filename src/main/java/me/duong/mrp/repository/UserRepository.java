@@ -15,12 +15,14 @@ public class UserRepository {
         return null;
     }
 
-    public void insertUser(User user) throws SQLException {
+    public boolean insertUser(User user) throws SQLException {
         var statement = session.prepareStatement("""
-                INSERT INTO users (username, password) VALUES (?, ?)
+                INSERT INTO users (username, password, salt) VALUES (?, ?, ?)
                 """);
         statement.setString(1, user.username());
         statement.setString(2, user.password());
-        statement.executeUpdate();
+        statement.setString(3, user.salt());
+        var result = statement.executeUpdate();
+        return result == 1;
     }
 }

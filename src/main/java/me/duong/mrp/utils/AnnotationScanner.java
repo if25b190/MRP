@@ -2,22 +2,22 @@ package me.duong.mrp.utils;
 
 import me.duong.mrp.Logger;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 public class AnnotationScanner {
     public static void scanAnnotations(String packageName,
-                                        Class<? extends Annotation> annotation,
-                                        Consumer<Method> callback) {
+                                       Class<? extends Annotation> annotation,
+                                       Consumer<Method> callback) {
         var classes = getClasses(packageName);
         for (Class<?> clazz : classes) {
             for (Method method : clazz.getMethods()) {
@@ -37,50 +37,62 @@ public class AnnotationScanner {
      */
     private static List<Class<?>> getClasses(String packageName) {
         try {
-            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            ClassLoader classLoader = ClassLoader.getSystemClassLoader();
             String path = packageName.replace('.', '/');
-            Enumeration<URL> resources = classLoader.getResources(path);
-            List<File> dirs = new ArrayList<>();
-            while (resources.hasMoreElements()) {
-                URL resource = resources.nextElement();
-                URI uri = new URI(resource.toString());
-                dirs.add(new File(uri.getPath()));
-            }
             List<Class<?>> classes = new ArrayList<>();
-            for (File directory : dirs) {
-                classes.addAll(findClasses(directory, packageName));
+            var packageUrl = classLoader.getResource(path);
+            if (packageUrl != null && "jar".equals(packageUrl.getProtocol())) {
+                String jarFileName = URLDecoder.decode(packageUrl.getFile(), StandardCharsets.UTF_8);
+                jarFileName = jarFileName.substring(5, jarFileName.indexOf("!"));
+                try (JarFile jf = new JarFile(jarFileName)) {
+                    Enumeration<JarEntry> jarEntries = jf.entries();
+                    while (jarEntries.hasMoreElements()) {
+                        String entryName = jarEntries.nextElement().getName();
+                        if (entryName.startsWith(path) && entryName.length() > path.length() + 5) {
+                            entryName = entryName
+                                    .substring(path.length(), entryName.lastIndexOf('.'))
+                                    .replaceAll("/", "");
+                            var clazz = getClass(entryName, packageName);
+                            if (clazz != null) {
+                                classes.add(clazz);
+                            }
+                        }
+                    }
+                }
+            } else {
+                try (InputStream in = classLoader.getResourceAsStream(path)) {
+                    if (in != null) {
+                        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+                            reader.lines()
+                                    .filter(line -> line.endsWith(".class"))
+                                    .map(line -> getClass(line, packageName))
+                                    .forEach(classes::add);
+                        }
+                    }
+                }
             }
             return classes;
-        } catch (ClassNotFoundException | IOException | URISyntaxException exception) {
-            Logger.error(exception.getMessage());
+        } catch (IOException exception) {
+            Logger.error("Failed to ", exception.getLocalizedMessage());
         }
         return List.of();
     }
 
     /**
-     * Recursive method used to find all classes in a given directory and
-     * sub dirs.
+     * Finds the class within the specified package
      *
-     * @param directory   The base directory
-     * @param packageName The package name for classes found inside the base directory
-     * @return The classes
+     * @param className   The class name to find
+     * @param packageName The package name where the class resides
+     * @return the class object
      */
-    private static List<Class<?>> findClasses(File directory, String packageName) throws ClassNotFoundException {
-        List<Class<?>> classes = new ArrayList<>();
-        if (!directory.exists()) {
-            return classes;
+    private static Class<?> getClass(String className, String packageName) {
+        try {
+            int idx = className.lastIndexOf('.');
+            return Class.forName(packageName + "."
+                    + (idx != -1 ? className.substring(0, idx) : className));
+        } catch (ClassNotFoundException e) {
+            Logger.error("Class not found: %s\n%s", className, e.getLocalizedMessage());
         }
-        File[] files = directory.listFiles();
-        if (files == null) {
-            return List.of();
-        }
-        for (File file : files) {
-            if (file.isDirectory()) {
-                classes.addAll(findClasses(file, packageName + "." + file.getName()));
-            } else if (file.getName().endsWith(".class")) {
-                classes.add(Class.forName(packageName + '.' + file.getName().substring(0, file.getName().length() - 6)));
-            }
-        }
-        return classes;
+        return null;
     }
 }

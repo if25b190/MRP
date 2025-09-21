@@ -6,6 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
+import java.util.Base64;
 import java.util.Optional;
 
 public class HashingUtils {
@@ -18,7 +19,7 @@ public class HashingUtils {
 
     public static Optional<String> hashPassword(String password, byte[] salt) {
         byte[] result = pbkdf2Hash(password, salt);
-        return result != null ? Optional.of(new String(result)) : Optional.empty();
+        return result != null ? Optional.of(Base64.getEncoder().encodeToString(result)) : Optional.empty();
     }
 
     private static byte[] pbkdf2Hash(String password, byte[] salt) {

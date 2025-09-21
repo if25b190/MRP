@@ -48,6 +48,10 @@ public class DefaultHttpHandler implements HttpHandler {
 
     private Map<String, String> extractWildcards(String targetPath, String requestPath) {
         Map<String, String> wildcards = new HashMap<>();
+        System.out.println(targetPath + " " + targetPath.matches(".*/:[A-Za-z0-9]+.*"));
+        if (!targetPath.matches(".*/:[A-Za-z0-9]+.*")) {
+            return wildcards;
+        }
         try {
             var pattern = Pattern.compile(targetPath.replaceAll("/:[A-Za-z0-9]+", "/(.+)"));
             var matcher = pattern.matcher(requestPath);
