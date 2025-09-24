@@ -1,4 +1,4 @@
-package me.duong.mrp.utils;
+package me.duong.mrp.utils.http;
 
 public enum Method {
     GET,

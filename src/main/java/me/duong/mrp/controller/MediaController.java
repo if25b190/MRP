@@ -1,8 +1,8 @@
 package me.duong.mrp.controller;
 
-import me.duong.mrp.utils.Controller;
-import me.duong.mrp.utils.Method;
-import me.duong.mrp.utils.Request;
+import me.duong.mrp.utils.http.Controller;
+import me.duong.mrp.utils.http.Method;
+import me.duong.mrp.utils.http.Request;
 
 public class MediaController {
     @Controller(path = "/api/media")

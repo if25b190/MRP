@@ -1,4 +1,4 @@
-package me.duong.mrp.utils;
+package me.duong.mrp.utils.security;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;

@@ -1,4 +1,4 @@
-package me.duong.mrp.utils;
+package me.duong.mrp.utils.http;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

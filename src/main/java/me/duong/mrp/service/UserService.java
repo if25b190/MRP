@@ -1,23 +1,32 @@
 package me.duong.mrp.service;
 
 import me.duong.mrp.Logger;
+import me.duong.mrp.TokenStore;
 import me.duong.mrp.dto.LoginDto;
 import me.duong.mrp.dto.UserDto;
 import me.duong.mrp.model.User;
 import me.duong.mrp.repository.DbSession;
 import me.duong.mrp.repository.UserRepository;
-import me.duong.mrp.utils.HashingUtils;
+import me.duong.mrp.utils.security.HashingUtils;
 
 import java.util.Base64;
 import java.util.Optional;
 
 public class UserService {
 
-    public Optional<UserDto> getUser() {
+    public Optional<String> loginUser(LoginDto loginDto) {
         DbSession session = new DbSession();
         try (session) {
             UserRepository userRepository = new UserRepository(session);
-            User user = userRepository.findUser();
+            var result = userRepository.findUserByUsername(loginDto.getUsername());
+            if (result.isPresent()) {
+                var user = result.get();
+                var salt = Base64.getDecoder().decode(user.salt());
+                var pass = HashingUtils.hashPassword(loginDto.getPassword(), salt);
+                if (pass.filter(s -> s.equals(user.password())).isPresent()) {
+                    return Optional.of(TokenStore.createToken(user));
+                }
+            }
             return Optional.empty();
         } catch (Exception exception) {
             Logger.error("Session failed to execute: %s", exception.getLocalizedMessage());

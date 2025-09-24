@@ -2,10 +2,11 @@ package me.duong.mrp;
 
 import com.sun.net.httpserver.HttpServer;
 import me.duong.mrp.controller.DefaultHttpHandler;
-import me.duong.mrp.utils.AnnotationScanner;
-import me.duong.mrp.utils.Controller;
-import me.duong.mrp.utils.Mapping;
-import me.duong.mrp.utils.Request;
+import me.duong.mrp.utils.*;
+import me.duong.mrp.utils.http.Controller;
+import me.duong.mrp.utils.http.Mapping;
+import me.duong.mrp.utils.http.Request;
+import me.duong.mrp.utils.http.Responders;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -16,7 +17,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 public class MRP {
-    public static final Map<Mapping, Consumer<Request>> controllers = new HashMap<>();
+    private static final Map<Mapping, Consumer<Request>> controllers = new HashMap<>();
 
     public static void main(String[] args) {
         try {
@@ -34,10 +35,15 @@ public class MRP {
         }
     }
 
+    public static Map<Mapping, Consumer<Request>> getControllers() {
+        return Collections.unmodifiableMap(controllers);
+    }
+
     private static void initControllers() {
         AnnotationScanner.scanAnnotations("me.duong.mrp.controller", Controller.class, method -> {
             var methodType = method.getAnnotation(Controller.class).method();
             var path = method.getAnnotation(Controller.class).path();
+            var authRequired = method.getAnnotation(Controller.class).authRequired();
             if (method.getParameterCount() != 1 ||
                     method.getParameterTypes()[0] != Request.class) {
                 Logger.error(
@@ -47,7 +53,7 @@ public class MRP {
                 );
                 return;
             }
-            controllers.put(new Mapping(methodType, path), request -> invokeMethod(method, request));
+            controllers.put(new Mapping(methodType, path, authRequired), request -> invokeMethod(method, request));
             Logger.info(
                     "Registered controller \"%s\" - \"%s\" for \"%s\"!",
                     methodType,
@@ -70,6 +76,7 @@ public class MRP {
         } catch (IllegalAccessException | InvocationTargetException exception) {
             exception.printStackTrace();
             Logger.error("%s: %s", method.getName(), exception.getLocalizedMessage());
+            Responders.sendResponse(request, 500);
         }
     }
 }

@@ -1,4 +1,4 @@
-package me.duong.mrp.utils;
+package me.duong.mrp.utils.parser;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

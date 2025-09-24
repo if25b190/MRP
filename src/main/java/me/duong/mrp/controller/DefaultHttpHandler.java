@@ -1,17 +1,22 @@
 package me.duong.mrp.controller;
 
+import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import me.duong.mrp.Logger;
 import me.duong.mrp.MRP;
-import me.duong.mrp.utils.Request;
+import me.duong.mrp.TokenStore;
+import me.duong.mrp.utils.http.Mapping;
+import me.duong.mrp.utils.http.Request;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class DefaultHttpHandler implements HttpHandler {
     @Override
@@ -26,20 +31,35 @@ public class DefaultHttpHandler implements HttpHandler {
         Map<String, List<String>> queryParameters = parseQueryParameters(exchange.getRequestURI().getQuery());
         String body = new String(exchange.getRequestBody().readAllBytes());
         Logger.info("REQUEST: %s - %s", method, path);
-        var result = MRP.controllers.entrySet()
+        var result = filteredControllers(method, path)
+                .flatMap(entry -> {
+                    var userId = checkAuth(exchange.getRequestHeaders());
+                    if (entry.getKey().authRequired() && userId == -1) {
+                        return Stream.empty();
+                    }
+                    var wildcards = extractWildcards(entry.getKey().path(), path);
+                    entry.getValue().accept(new Request(exchange, path, queryParameters, wildcards, body, userId));
+                    return Stream.of(0);
+                }).findAny();
+        if (result.isEmpty()) {
+            var authRequired = filteredControllers(method, path).anyMatch(entry ->
+                    entry.getKey().authRequired());
+            exchange.sendResponseHeaders(authRequired ? 401 : 404, 0);
+            exchange.getResponseBody().close();
+        }
+    }
+
+    private Stream<Map.Entry<Mapping, Consumer<Request>>> filteredControllers(String method, String path) {
+        return MRP.getControllers().entrySet()
                 .stream()
                 .filter(entry ->
                         entry.getKey().method().name().equalsIgnoreCase(method) &&
-                                matchesPath(entry.getKey().path(), path))
-                .map(entry -> {
-                    var wildcards = extractWildcards(entry.getKey().path(), path);
-                    entry.getValue().accept(new Request(exchange, path, queryParameters, wildcards, body));
-                    return 0;
-                }).findAny();
-        if (result.isEmpty()) {
-            exchange.sendResponseHeaders(404, 0);
-            exchange.getResponseBody().close();
-        }
+                                matchesPath(entry.getKey().path(), path));
+    }
+
+    private int checkAuth(Headers headers) {
+        return headers.containsKey("Authorization") ?
+                TokenStore.verifyToken(headers.get("Authorization").getFirst()) : -1;
     }
 
     private boolean matchesPath(String targetPath, String requestPath) {
@@ -48,7 +68,6 @@ public class DefaultHttpHandler implements HttpHandler {
 
     private Map<String, String> extractWildcards(String targetPath, String requestPath) {
         Map<String, String> wildcards = new HashMap<>();
-        System.out.println(targetPath + " " + targetPath.matches(".*/:[A-Za-z0-9]+.*"));
         if (!targetPath.matches(".*/:[A-Za-z0-9]+.*")) {
             return wildcards;
         }
