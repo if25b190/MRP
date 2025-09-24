@@ -19,16 +19,7 @@ public class UserRepository {
                 """);
         statement.setInt(1, id);
         var result = statement.executeQuery();
-        if (result.next()) {
-            var user = new User(
-                    result.getInt(1),
-                    result.getString(2),
-                    result.getString(3),
-                    result.getString(4)
-            );
-            return Optional.of(user);
-        }
-        return Optional.empty();
+        return getUserFromResult(result);
     }
 
     public Optional<User> findUserByUsername(String username) throws SQLException {
