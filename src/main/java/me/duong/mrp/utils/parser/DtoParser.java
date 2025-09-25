@@ -14,4 +14,12 @@ public class DtoParser {
             return Optional.empty();
         }
     }
+    public static String toJson(Object obj) {
+        try {
+            var mapper = new ObjectMapper();
+            return mapper.writeValueAsString(obj);
+        } catch (JsonProcessingException e) {
+            return "{}";
+        }
+    }
 }

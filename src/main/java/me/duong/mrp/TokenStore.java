@@ -14,10 +14,10 @@ public class TokenStore {
         var token = Base64.getEncoder()
                 .encodeToString(String.format(
                         "%s-%d",
-                        user.id(),
+                        user.getId(),
                         System.currentTimeMillis()).getBytes(StandardCharsets.UTF_8)
                 );
-        tokens.put(token, user.id());
+        tokens.put(token, user.getId());
         return token;
     }
 

@@ -1,8 +1,13 @@
 package me.duong.mrp.controller;
 
+import me.duong.mrp.model.Media;
+import me.duong.mrp.service.MediaService;
 import me.duong.mrp.utils.http.Controller;
 import me.duong.mrp.utils.http.Method;
 import me.duong.mrp.utils.http.Request;
+import me.duong.mrp.utils.http.Responders;
+import me.duong.mrp.utils.parser.DtoParser;
+import me.duong.mrp.utils.parser.Guards;
 
 public class MediaController {
     @Controller(path = "/api/media")
@@ -22,6 +27,19 @@ public class MediaController {
 
     @Controller(path = "/api/media", method = Method.POST)
     public static void createMedia(Request request) {
+        var dto = DtoParser.parseJson(request.body(), Media.class);
+        if (!Guards.checkDto(request, dto)) {
+            return;
+        }
+        var media = dto.get();
+        var service = new MediaService();
+        var result = service.createMedia(media);
+        String response = DtoParser.toJson(media);
+        if (result.isPresent()) {
+            Responders.sendResponse(request, 201, response);
+        } else {
+            Responders.sendResponse(request, 400);
+        }
     }
 
     @Controller(path = "/api/media/:id", method = Method.PUT)

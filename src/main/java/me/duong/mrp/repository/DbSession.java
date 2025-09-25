@@ -31,7 +31,7 @@ public class DbSession implements AutoCloseable {
         try {
             connection.commit();
         } catch (SQLException exception) {
-            Logger.error("Failed to commit: %s", exception.getLocalizedMessage());
+            Logger.error("Failed to commit: %s", exception.getMessage());
         }
     }
 
@@ -40,7 +40,7 @@ public class DbSession implements AutoCloseable {
         try {
             connection.rollback();
         } catch (SQLException exception) {
-            Logger.error("Failed to rollback: %s", exception.getLocalizedMessage());
+            Logger.error("Failed to rollback: %s", exception.getMessage());
         }
     }
 
@@ -52,7 +52,7 @@ public class DbSession implements AutoCloseable {
                     "mrp"
             );
         } catch (SQLException exception) {
-            Logger.error("Failed to create connection: %s", exception.getLocalizedMessage());
+            Logger.error("Failed to create connection: %s", exception.getMessage());
         }
     }
 
@@ -61,7 +61,7 @@ public class DbSession implements AutoCloseable {
         try {
             connection.setAutoCommit(false);
         } catch (SQLException exception) {
-            Logger.error("Auto-Commit not disabled: %s", exception.getLocalizedMessage());
+            Logger.error("Auto-Commit not disabled: %s", exception.getMessage());
         }
     }
 
@@ -71,7 +71,7 @@ public class DbSession implements AutoCloseable {
             connection.close();
             connection = null;
         } catch (SQLException exception) {
-            Logger.error("Failed to close connection: %s", exception.getLocalizedMessage());
+            Logger.error("Failed to close connection: %s", exception.getMessage());
         }
     }
 
@@ -85,7 +85,7 @@ public class DbSession implements AutoCloseable {
             func.accept(null);
             session.commit();
         } catch (Exception exception) {
-            Logger.error("Session failed to execute: %s", exception.getLocalizedMessage());
+            Logger.error("Session failed to execute: %s", exception.getMessage());
             session.rollback();
             callbackError.accept(exception);
         }

@@ -4,16 +4,17 @@ DROP TABLE IF EXISTS rating;
 
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
-  username VARCHAR(256) UNIQUE,
-  password VARCHAR(512),
-  salt VARCHAR(512)
+  username VARCHAR(256) UNIQUE NOT NULL,
+  password VARCHAR(512) NOT NULL,
+  salt VARCHAR(512) NOT NULL,
+  favoriteGenre VARCHAR(256)
 );
 
 CREATE TABLE IF NOT EXISTS media (
   id SERIAL PRIMARY KEY,
-  title VARCHAR(512) UNIQUE,
+  title VARCHAR(512) UNIQUE NOT NULL,
   description VARCHAR(1024),
-  mediaType VARCHAR(512),
+  mediaType VARCHAR(512) NOT NULL,
   releaseYear INTEGER,
   genres VARCHAR(1024),
   ageRestriction INTEGER
@@ -21,7 +22,7 @@ CREATE TABLE IF NOT EXISTS media (
 
 CREATE TABLE IF NOT EXISTS rating (
   id SERIAL PRIMARY KEY,
-  stars INTEGER,
+  stars INTEGER NOT NULL,
   comment VARCHAR(512),
-  createdAt BIGINT
+  createdAt BIGINT NOT NULL
 );

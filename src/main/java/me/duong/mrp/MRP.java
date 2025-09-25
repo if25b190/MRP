@@ -75,7 +75,7 @@ public class MRP {
             }
         } catch (IllegalAccessException | InvocationTargetException exception) {
             exception.printStackTrace();
-            Logger.error("%s: %s", method.getName(), exception.getLocalizedMessage());
+            Logger.error("%s: %s", method.getName(), exception.getMessage());
             Responders.sendResponse(request, 500);
         }
     }

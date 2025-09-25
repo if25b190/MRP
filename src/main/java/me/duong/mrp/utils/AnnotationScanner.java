@@ -73,7 +73,7 @@ public class AnnotationScanner {
             }
             return classes;
         } catch (IOException exception) {
-            Logger.error("Failed to ", exception.getLocalizedMessage());
+            Logger.error("Failed to ", exception.getMessage());
         }
         return List.of();
     }
@@ -91,7 +91,7 @@ public class AnnotationScanner {
             return Class.forName(packageName + "."
                     + (idx != -1 ? className.substring(0, idx) : className));
         } catch (ClassNotFoundException e) {
-            Logger.error("Class not found: %s\n%s", className, e.getLocalizedMessage());
+            Logger.error("Class not found: %s\n%s", className, e.getMessage());
         }
         return null;
     }

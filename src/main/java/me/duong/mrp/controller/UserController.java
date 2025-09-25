@@ -1,6 +1,6 @@
 package me.duong.mrp.controller;
 
-import me.duong.mrp.dto.LoginDto;
+import me.duong.mrp.model.User;
 import me.duong.mrp.service.UserService;
 import me.duong.mrp.utils.http.Controller;
 import me.duong.mrp.utils.http.Method;
@@ -12,7 +12,7 @@ import me.duong.mrp.utils.parser.Guards;
 public class UserController {
     @Controller(path = "/api/users/register", method = Method.POST)
     public static void register(Request request) {
-        var dto = DtoParser.parseJson(request.body(), LoginDto.class);
+        var dto = DtoParser.parseJson(request.body(), User.class);
         if (!Guards.checkDto(request, dto)) {
             return;
         }
@@ -23,13 +23,13 @@ public class UserController {
         if (result.isPresent()) {
             Responders.sendResponse(request, 201, response);
         } else {
-            Responders.sendResponse(request, 500);
+            Responders.sendResponse(request, 400);
         }
     }
 
     @Controller(path = "/api/users/login", method = Method.POST)
     public static void login(Request request) {
-        var dto = DtoParser.parseJson(request.body(), LoginDto.class);
+        var dto = DtoParser.parseJson(request.body(), User.class);
         if (!Guards.checkDto(request, dto)) {
             return;
         }

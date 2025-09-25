@@ -37,7 +37,8 @@ public class UserRepository {
                     result.getInt(1),
                     result.getString(2),
                     result.getString(3),
-                    result.getString(4)
+                    result.getString(4),
+                    result.getString(5)
             );
             return Optional.of(user);
         }
@@ -48,9 +49,9 @@ public class UserRepository {
         var statement = session.prepareStatement("""
                 INSERT INTO users (username, password, salt) VALUES (?, ?, ?)
                 """);
-        statement.setString(1, user.username());
-        statement.setString(2, user.password());
-        statement.setString(3, user.salt());
+        statement.setString(1, user.getUsername());
+        statement.setString(2, user.getPassword());
+        statement.setString(3, user.getSalt());
         var result = statement.executeUpdate();
         return result == 1;
     }
