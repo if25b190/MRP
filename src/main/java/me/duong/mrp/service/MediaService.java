@@ -14,11 +14,8 @@ public class MediaService {
         try (session) {
             MediaRepository repository = new MediaRepository(session);
             var result = repository.insertMedia(media);
-            if (!result) {
-                return Optional.empty();
-            }
             session.commit();
-            return Optional.of(media);
+            return Optional.of(result);
         } catch (Exception exception) {
             Logger.error("Session failed to execute: %s", exception.getMessage());
             session.rollback();

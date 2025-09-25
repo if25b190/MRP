@@ -2,10 +2,10 @@ package me.duong.mrp.controller;
 
 import me.duong.mrp.model.Media;
 import me.duong.mrp.service.MediaService;
-import me.duong.mrp.utils.http.Controller;
-import me.duong.mrp.utils.http.Method;
-import me.duong.mrp.utils.http.Request;
-import me.duong.mrp.utils.http.Responders;
+import me.duong.mrp.presentation.Controller;
+import me.duong.mrp.presentation.Method;
+import me.duong.mrp.presentation.Request;
+import me.duong.mrp.presentation.Responders;
 import me.duong.mrp.utils.parser.DtoParser;
 import me.duong.mrp.utils.parser.Guards;
 

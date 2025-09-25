@@ -1,8 +1,8 @@
 package me.duong.mrp.controller;
 
-import me.duong.mrp.utils.http.Controller;
-import me.duong.mrp.utils.http.Method;
-import me.duong.mrp.utils.http.Request;
+import me.duong.mrp.presentation.Controller;
+import me.duong.mrp.presentation.Method;
+import me.duong.mrp.presentation.Request;
 
 public class RatingController {
     @Controller(path = "/api/media/:id/rate", method = Method.POST)

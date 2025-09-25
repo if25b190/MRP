@@ -1,7 +1,7 @@
 package me.duong.mrp.service;
 
 import me.duong.mrp.Logger;
-import me.duong.mrp.TokenStore;
+import me.duong.mrp.utils.security.TokenStore;
 import me.duong.mrp.model.User;
 import me.duong.mrp.repository.DbException;
 import me.duong.mrp.repository.DbSession;
@@ -23,14 +23,14 @@ public class UserService {
                 var salt = Base64.getDecoder().decode(user.getSalt());
                 var pass = HashingUtils.hashPassword(loginDto.getPassword(), salt);
                 if (pass.filter(s -> s.equals(user.getPassword())).isPresent()) {
-                    return Optional.of(TokenStore.createToken(user));
+                    return Optional.of(TokenStore.INSTANCE.createToken(user));
                 }
             }
             return Optional.empty();
         } catch (Exception exception) {
             Logger.error("Session failed to execute: %s", exception.getMessage());
             session.rollback();
-            return Optional.empty();
+            throw new DbException(exception);
         }
     }
 
@@ -43,23 +43,17 @@ public class UserService {
             if (password.isEmpty()) {
                 return Optional.empty();
             }
-            User user = new User(
-                    -1,
-                    loginDto.getUsername(),
-                    password.get(),
-                    Base64.getEncoder().encodeToString(salt),
-                    null
-            );
-            var result = userRepository.insertUser(user);
-            if (!result) {
-                return Optional.empty();
-            }
+            User user = new User()
+                    .setUsername(loginDto.getUsername())
+                    .setPassword(password.get())
+                    .setSalt(Base64.getEncoder().encodeToString(salt));
+            user = userRepository.insertUser(user);
             session.commit();
             return Optional.of(user);
         } catch (Exception exception) {
             Logger.error("Session failed to execute: %s", exception.getMessage());
             session.rollback();
-            throw new DbException(exception.getMessage());
+            throw new DbException(exception);
         }
     }
 

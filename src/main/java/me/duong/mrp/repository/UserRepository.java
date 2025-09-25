@@ -1,58 +1,71 @@
 package me.duong.mrp.repository;
 
+import me.duong.mrp.Logger;
 import me.duong.mrp.model.User;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
 
-public class UserRepository {
-    private final DbSession session;
-
+public class UserRepository extends BaseRepository<User> {
     public UserRepository(DbSession session) {
-        this.session = session;
+        super(session);
     }
 
-    public Optional<User> findUserById(int id) throws SQLException {
-        var statement = session.prepareStatement("""
+    public Optional<User> findUserById(int id) {
+        return super.findBy("""
                 SELECT * FROM users where id = ?
-                """);
-        statement.setInt(1, id);
-        var result = statement.executeQuery();
-        return getUserFromResult(result);
+                """,
+                prepared -> prepared.setInt(1, id),
+                UserRepository::mapUser);
     }
 
-    public Optional<User> findUserByUsername(String username) throws SQLException {
-        var statement = session.prepareStatement("""
+    public Optional<User> findUserByUsername(String username) {
+        return super.findBy("""
                 SELECT * FROM users where username = ?
-                """);
-        statement.setString(1, username);
-        var result = statement.executeQuery();
-        return getUserFromResult(result);
+                """,
+                prepared -> prepared.setString(1, username),
+                UserRepository::mapUser);
     }
 
-    private Optional<User> getUserFromResult(ResultSet result) throws SQLException {
-        if (result.next()) {
-            var user = new User(
-                    result.getInt(1),
-                    result.getString(2),
-                    result.getString(3),
-                    result.getString(4),
-                    result.getString(5)
-            );
-            return Optional.of(user);
-        }
-        return Optional.empty();
-    }
-
-    public boolean insertUser(User user) throws SQLException {
-        var statement = session.prepareStatement("""
+    public User insertUser(User user) {
+        return super.insert(user, """
                 INSERT INTO users (username, password, salt) VALUES (?, ?, ?)
+                """, prepared -> {
+            prepared.setString(1, user.getUsername());
+            prepared.setString(2, user.getPassword());
+            prepared.setString(3, user.getSalt());
+        });
+    }
+
+    public User updateUser(User user) {
+        super.update("""
+                UPDATE users SET username = ?, favoriteGenre = ? WHERE id = ?
+                """, prepared -> {
+            prepared.setString(1, user.getUsername());
+            prepared.setString(2, user.getFavoriteGenre());
+            prepared.setObject(3, user.getId());
+        });
+        return user;
+    }
+
+    public void delete(User user) {
+        super.delete(user, """
+                DELETE FROM users WHERE id = ?
                 """);
-        statement.setString(1, user.getUsername());
-        statement.setString(2, user.getPassword());
-        statement.setString(3, user.getSalt());
-        var result = statement.executeUpdate();
-        return result == 1;
+    }
+
+    private static User mapUser(ResultSet result) {
+        try {
+            return new User()
+                    .setId(result.getInt(1))
+                    .setUsername(result.getString(2))
+                    .setPassword(result.getString(3))
+                    .setSalt(result.getString(4))
+                    .setFavoriteGenre(result.getString(5));
+        } catch (SQLException exception) {
+            Logger.error("Failed to map user: %s", exception.getMessage());
+            throw new DbException("Failed to map user", exception);
+        }
     }
 }

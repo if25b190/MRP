@@ -3,28 +3,16 @@ package me.duong.mrp.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class User extends BaseValidator {
-    private int id;
+public class User extends Entity<Integer> implements BaseValidator {
     private String username;
     private String password;
     private String salt;
     private String favoriteGenre;
 
-    public User(int id, String username, String password, String salt, String favoriteGenre) {
-        this.id = id;
-        this.username = username;
-        this.password = password;
-        this.salt = salt;
-        this.favoriteGenre = favoriteGenre;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    @JsonIgnore
-    public void setId(int id) {
-        this.id = id;
+    @Override
+    public User setId(Integer id) {
+        super.setId(id);
+        return this;
     }
 
     public String getUsername() {
@@ -32,8 +20,9 @@ public class User extends BaseValidator {
     }
 
     @JsonProperty("username")
-    public void setUsername(String username) {
+    public User setUsername(String username) {
         this.username = username;
+        return this;
     }
 
     @JsonIgnore
@@ -42,8 +31,9 @@ public class User extends BaseValidator {
     }
 
     @JsonProperty("password")
-    public void setPassword(String password) {
+    public User setPassword(String password) {
         this.password = password;
+        return this;
     }
 
     @JsonIgnore
@@ -52,8 +42,9 @@ public class User extends BaseValidator {
     }
 
     @JsonIgnore
-    public void setSalt(String salt) {
+    public User setSalt(String salt) {
         this.salt = salt;
+        return this;
     }
 
     public String getFavoriteGenre() {
@@ -61,12 +52,13 @@ public class User extends BaseValidator {
     }
 
     @JsonProperty("favoriteGenre")
-    public void setFavoriteGenre(String favoriteGenre) {
+    public User setFavoriteGenre(String favoriteGenre) {
         this.favoriteGenre = favoriteGenre;
+        return this;
     }
 
     @Override
     public boolean validate() {
-        return username != null && !username.trim().isEmpty() && password != null && !password.trim().isEmpty();
+        return username != null && !username.isBlank() && password != null && !password.isBlank();
     }
 }

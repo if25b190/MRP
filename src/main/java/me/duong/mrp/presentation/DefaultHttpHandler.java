@@ -1,13 +1,11 @@
-package me.duong.mrp.controller;
+package me.duong.mrp.presentation;
 
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import me.duong.mrp.ControllerStore;
 import me.duong.mrp.Logger;
-import me.duong.mrp.MRP;
-import me.duong.mrp.TokenStore;
-import me.duong.mrp.utils.http.Mapping;
-import me.duong.mrp.utils.http.Request;
+import me.duong.mrp.utils.security.TokenStore;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,7 +48,7 @@ public class DefaultHttpHandler implements HttpHandler {
     }
 
     private Stream<Map.Entry<Mapping, Consumer<Request>>> filteredControllers(String method, String path) {
-        return MRP.getControllers().entrySet()
+        return ControllerStore.INSTANCE.getControllers().entrySet()
                 .stream()
                 .filter(entry ->
                         entry.getKey().method().name().equalsIgnoreCase(method) &&
@@ -59,7 +57,7 @@ public class DefaultHttpHandler implements HttpHandler {
 
     private int checkAuth(Headers headers) {
         return headers.containsKey("Authorization") ?
-                TokenStore.verifyToken(headers.get("Authorization").getFirst()) : -1;
+                TokenStore.INSTANCE.verifyToken(headers.get("Authorization").getFirst()) : -1;
     }
 
     private boolean matchesPath(String targetPath, String requestPath) {

@@ -2,10 +2,10 @@ package me.duong.mrp.controller;
 
 import me.duong.mrp.model.User;
 import me.duong.mrp.service.UserService;
-import me.duong.mrp.utils.http.Controller;
-import me.duong.mrp.utils.http.Method;
-import me.duong.mrp.utils.http.Request;
-import me.duong.mrp.utils.http.Responders;
+import me.duong.mrp.presentation.Controller;
+import me.duong.mrp.presentation.Method;
+import me.duong.mrp.presentation.Request;
+import me.duong.mrp.presentation.Responders;
 import me.duong.mrp.utils.parser.DtoParser;
 import me.duong.mrp.utils.parser.Guards;
 
@@ -19,9 +19,8 @@ public class UserController {
         var login = dto.get();
         var service = new UserService();
         var result = service.registerUser(login);
-        String response = String.format("Hello, %s! You tried to register using the pw \"%s\"", login.getUsername(), login.getPassword());
         if (result.isPresent()) {
-            Responders.sendResponse(request, 201, response);
+            Responders.sendResponse(request, 201);
         } else {
             Responders.sendResponse(request, 400);
         }

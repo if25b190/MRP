@@ -1,26 +1,35 @@
 package me.duong.mrp.model;
 
-public final class Rating extends BaseValidator {
-    private final int stars;
-    private final String comment;
-    private final long createdAt;
+public class Rating implements BaseValidator {
+    private int stars;
+    private String comment;
+    private long createdAt;
 
-    public Rating(int stars, String comment, long createdAt) {
-        this.stars = stars;
-        this.comment = comment;
-        this.createdAt = createdAt;
-    }
-
-    public int stars() {
+    public int getStars() {
         return stars;
     }
 
-    public String comment() {
+    public Rating setStars(int stars) {
+        this.stars = stars;
+        return this;
+    }
+
+    public String getComment() {
         return comment;
     }
 
-    public long createdAt() {
+    public Rating setComment(String comment) {
+        this.comment = comment;
+        return this;
+    }
+
+    public long getCreatedAt() {
         return createdAt;
+    }
+
+    public Rating setCreatedAt(long createdAt) {
+        this.createdAt = createdAt;
+        return this;
     }
 
     @Override
