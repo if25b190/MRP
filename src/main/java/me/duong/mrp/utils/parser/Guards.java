@@ -1,8 +1,8 @@
 package me.duong.mrp.utils.parser;
 
 import me.duong.mrp.model.BaseValidator;
-import me.duong.mrp.utils.http.Request;
-import me.duong.mrp.utils.http.Responders;
+import me.duong.mrp.presentation.Request;
+import me.duong.mrp.presentation.Responders;
 
 import java.util.Optional;
 

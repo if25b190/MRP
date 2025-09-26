@@ -1,4 +1,4 @@
-package me.duong.mrp.utils.http;
+package me.duong.mrp.presentation;
 
 public enum ContentType {
     PLAIN_TEXT("text/plain"),

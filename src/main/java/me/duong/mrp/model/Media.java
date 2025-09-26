@@ -2,7 +2,7 @@ package me.duong.mrp.model;
 
 import java.util.List;
 
-public final class Media extends BaseValidator {
+public class Media extends Entity<Integer> implements BaseValidator {
     private String title;
     private String description;
     private String mediaType;
@@ -10,66 +10,71 @@ public final class Media extends BaseValidator {
     private List<String> genres;
     private int ageRestriction;
 
-    public Media(String title, String description, String mediaType, int releaseYear, List<String> genres,
-                 int ageRestriction) {
-        this.title = title;
-        this.description = description;
-        this.mediaType = mediaType;
-        this.releaseYear = releaseYear;
-        this.genres = genres;
-        this.ageRestriction = ageRestriction;
+    @Override
+    public Media setId(Integer id) {
+        super.setId(id);
+        return this;
     }
 
     public String getTitle() {
         return title;
     }
 
-    public void setTitle(String title) {
+    public Media setTitle(String title) {
         this.title = title;
+        return this;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
+    public Media setDescription(String description) {
         this.description = description;
+        return this;
     }
 
     public String getMediaType() {
         return mediaType;
     }
 
-    public void setMediaType(String mediaType) {
+    public Media setMediaType(String mediaType) {
         this.mediaType = mediaType;
+        return this;
     }
 
     public int getReleaseYear() {
         return releaseYear;
     }
 
-    public void setReleaseYear(int releaseYear) {
+    public Media setReleaseYear(int releaseYear) {
         this.releaseYear = releaseYear;
+        return this;
     }
 
     public List<String> getGenres() {
         return genres;
     }
 
-    public void setGenres(List<String> genres) {
+    public Media setGenres(List<String> genres) {
         this.genres = genres;
+        return this;
     }
 
     public int getAgeRestriction() {
         return ageRestriction;
     }
 
-    public void setAgeRestriction(int ageRestriction) {
+    public Media setAgeRestriction(int ageRestriction) {
         this.ageRestriction = ageRestriction;
+        return this;
     }
 
     @Override
     public boolean validate() {
-        return false;
+        return title != null && !title.isBlank() &&
+                description != null &&
+                mediaType != null && MediaType.containsMediaType(mediaType) &&
+                genres != null && ageRestriction >= 0;
     }
 }
