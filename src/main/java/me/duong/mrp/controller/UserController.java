@@ -10,7 +10,7 @@ import me.duong.mrp.utils.parser.DtoParser;
 import me.duong.mrp.utils.parser.Guards;
 
 public class UserController {
-    @Controller(path = "/api/users/register", method = Method.POST)
+    @Controller(path = "/api/users/register", method = Method.POST, authRequired = false)
     public static void register(Request request) {
         var dto = DtoParser.parseJson(request.body(), User.class);
         if (!Guards.checkDto(request, dto)) {
@@ -26,7 +26,7 @@ public class UserController {
         }
     }
 
-    @Controller(path = "/api/users/login", method = Method.POST)
+    @Controller(path = "/api/users/login", method = Method.POST, authRequired = false)
     public static void login(Request request) {
         var dto = DtoParser.parseJson(request.body(), User.class);
         if (!Guards.checkDto(request, dto)) {
@@ -42,7 +42,7 @@ public class UserController {
         }
     }
 
-    @Controller(path = "/api/users/:id/profile", authRequired = true)
+    @Controller(path = "/api/users/:id/profile")
     public static void getUserProfile(Request request) {
         Responders.sendResponse(request, 200, request.wildcards().get("id") + request.userId());
     }

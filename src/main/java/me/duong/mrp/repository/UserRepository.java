@@ -14,7 +14,7 @@ public class UserRepository extends BaseRepository<User> {
 
     public Optional<User> findUserById(int id) {
         return super.findBy("""
-                SELECT * FROM users where id = ?
+                SELECT * FROM users WHERE id = ?
                 """,
                 prepared -> prepared.setInt(1, id),
                 UserRepository::mapUser);
@@ -22,7 +22,7 @@ public class UserRepository extends BaseRepository<User> {
 
     public Optional<User> findUserByUsername(String username) {
         return super.findBy("""
-                SELECT * FROM users where username = ?
+                SELECT * FROM users WHERE username = ?
                 """,
                 prepared -> prepared.setString(1, username),
                 UserRepository::mapUser);
@@ -49,10 +49,10 @@ public class UserRepository extends BaseRepository<User> {
         return user;
     }
 
-    public void delete(User user) {
-        super.delete(user, """
+    public void deleteUser(int id) {
+        super.delete("""
                 DELETE FROM users WHERE id = ?
-                """);
+                """, prepared -> prepared.setInt(1, id));
     }
 
     private static User mapUser(ResultSet result) {

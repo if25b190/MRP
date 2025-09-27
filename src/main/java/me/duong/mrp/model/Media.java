@@ -1,5 +1,7 @@
 package me.duong.mrp.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
 public class Media extends Entity<Integer> implements BaseValidator {
@@ -20,6 +22,7 @@ public class Media extends Entity<Integer> implements BaseValidator {
         return title;
     }
 
+    @JsonProperty("title")
     public Media setTitle(String title) {
         this.title = title;
         return this;
@@ -29,6 +32,7 @@ public class Media extends Entity<Integer> implements BaseValidator {
         return description;
     }
 
+    @JsonProperty("description")
     public Media setDescription(String description) {
         this.description = description;
         return this;
@@ -38,6 +42,7 @@ public class Media extends Entity<Integer> implements BaseValidator {
         return mediaType;
     }
 
+    @JsonProperty("mediaType")
     public Media setMediaType(String mediaType) {
         this.mediaType = mediaType;
         return this;
@@ -47,6 +52,7 @@ public class Media extends Entity<Integer> implements BaseValidator {
         return releaseYear;
     }
 
+    @JsonProperty("releaseYear")
     public Media setReleaseYear(int releaseYear) {
         this.releaseYear = releaseYear;
         return this;
@@ -56,6 +62,7 @@ public class Media extends Entity<Integer> implements BaseValidator {
         return genres;
     }
 
+    @JsonProperty("genres")
     public Media setGenres(List<String> genres) {
         this.genres = genres;
         return this;
@@ -65,6 +72,7 @@ public class Media extends Entity<Integer> implements BaseValidator {
         return ageRestriction;
     }
 
+    @JsonProperty("ageRestriction")
     public Media setAgeRestriction(int ageRestriction) {
         this.ageRestriction = ageRestriction;
         return this;
