@@ -14,4 +14,11 @@ public class Guards {
         Responders.sendResponse(request, 400);
         return false;
     }
+    public static boolean verifyWildcardInt(Request request, String key) {
+        if (request.wildcards().get(key).matches("[0-9]+")) {
+            return true;
+        }
+        Responders.sendResponse(request, 400);
+        return false;
+    }
 }

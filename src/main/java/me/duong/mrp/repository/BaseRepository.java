@@ -66,9 +66,10 @@ public abstract class BaseRepository<T extends Entity<Integer>> {
         }
     }
 
-    protected List<T> findAll(String query, Function<ResultSet, T> map) {
+    protected List<T> findAll(String query, CheckedConsumer<PreparedStatement> bindParams, Function<ResultSet, T> map) {
         try {
             var prepared = session.prepareStatement(query);
+            bindParams.accept(prepared);
             var result = prepared.executeQuery();
             List<T> entities = new ArrayList<>();
             while (result.next()) {
@@ -81,10 +82,10 @@ public abstract class BaseRepository<T extends Entity<Integer>> {
         }
     }
 
-    protected void delete(T entity, String dml) {
+    protected void delete(String dml, CheckedConsumer<PreparedStatement> bindParams) {
         try {
             var prepared = session.prepareStatement(dml);
-            prepared.setInt(1, entity.getId());
+            bindParams.accept(prepared);
             prepared.executeUpdate();
         } catch (SQLException exception) {
             Logger.error("Failed to delete entity: %s", exception.getMessage());

@@ -10,5 +10,5 @@ import java.lang.annotation.Target;
 public @interface Controller {
     Method method() default Method.GET;
     String path();
-    boolean authRequired() default false;
+    boolean authRequired() default true;
 }

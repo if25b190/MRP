@@ -91,7 +91,6 @@ public class DefaultHttpHandler implements HttpHandler {
         if (query != null) {
             for (String part : query.split("&")) {
                 String[] data = part.split("=");
-                Logger.info("QUERY: %s / %s", data[0], data[1]);
                 queryParameters.compute(data[0], (key, value) -> {
                     List<String> temp = value != null ? value : new ArrayList<>();
                     temp.add(data[1]);

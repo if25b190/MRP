@@ -7,7 +7,7 @@ public enum MediaType {
 
     public static boolean containsMediaType(String mediaType) {
         try  {
-            MediaType.valueOf(mediaType);
+            MediaType.valueOf(mediaType.toUpperCase());
             return true;
         } catch (IllegalArgumentException e) {
             return false;
