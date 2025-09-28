@@ -1,4 +1,4 @@
-package me.duong.mrp;
+package me.duong.mrp.utils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

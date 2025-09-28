@@ -1,7 +1,7 @@
 package me.duong.mrp.repository;
 
-import me.duong.mrp.Logger;
-import me.duong.mrp.model.Entity;
+import me.duong.mrp.utils.Logger;
+import me.duong.mrp.entity.Entity;
 import me.duong.mrp.utils.CheckedConsumer;
 
 import java.sql.PreparedStatement;
@@ -27,11 +27,12 @@ public abstract class BaseRepository<T extends Entity<Integer>> {
             int result = prepared.executeUpdate();
             var key = prepared.getGeneratedKeys();
             if (result != 1 || !key.next()) {
-                throw new RuntimeException("Save " +
-                        entity.getClass().getName() + " failed!");
+                throw new DbException("Failed to insert entity");
             }
             var id = key.getInt(1);
-            entity.setId(id);
+            if (entity != null) {
+                entity.setId(id);
+            }
             return entity;
         } catch (SQLException exception) {
             Logger.error("Failed to insert entity: %s", exception.getMessage());

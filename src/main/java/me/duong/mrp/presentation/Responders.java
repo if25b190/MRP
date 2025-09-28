@@ -1,7 +1,7 @@
 package me.duong.mrp.presentation;
 
 import com.sun.net.httpserver.HttpExchange;
-import me.duong.mrp.Logger;
+import me.duong.mrp.utils.Logger;
 
 import java.io.IOException;
 import java.io.OutputStream;

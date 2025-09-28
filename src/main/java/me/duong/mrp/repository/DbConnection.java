@@ -1,6 +1,6 @@
 package me.duong.mrp.repository;
 
-import me.duong.mrp.Logger;
+import me.duong.mrp.utils.Logger;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

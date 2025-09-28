@@ -18,15 +18,15 @@ public record MediaFilter(
         var fields = new ArrayList<String>();
         if (title != null) fields.add("lower(title) LIKE ('%' || lower(?) || '%')");
         if (genre != null) fields.add("lower(genres) LIKE ('%' || lower(?) || '%')");
-        if (mediaType != null) fields.add("lower(mediaType) LIKE ('%' || lower(?) || '%')");
-        if (releaseYear != -1) fields.add("releaseYear = ?");
-        if (ageRestriction != -1) fields.add("ageRestriction = ?");
+        if (mediaType != null) fields.add("lower(media_type) LIKE ('%' || lower(?) || '%')");
+        if (releaseYear != -1) fields.add("release_year = ?");
+        if (ageRestriction != -1) fields.add("age_restriction = ?");
         //if (rating != -1) fields.add("rating = ?");
         var where = String.join(" AND ", fields);
         if (!where.isBlank()) where = "WHERE " + where;
         var order = switch (sortBy) {
             case "title" -> "title";
-            case "year" -> "releaseYear DESC";
+            case "year" -> "release_year DESC";
             // case "score" -> "rating DESC";
             default -> "";
         };

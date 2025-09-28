@@ -1,10 +1,12 @@
-package me.duong.mrp.model;
+package me.duong.mrp.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import me.duong.mrp.model.BaseValidator;
 
 public class User extends Entity<Integer> implements BaseValidator {
     private String username;
+    private String email;
     private String password;
     private String salt;
     private String favoriteGenre;
@@ -22,6 +24,16 @@ public class User extends Entity<Integer> implements BaseValidator {
     @JsonProperty("username")
     public User setUsername(String username) {
         this.username = username;
+        return this;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    @JsonProperty("email")
+    public User setEmail(String email) {
+        this.email = email;
         return this;
     }
 

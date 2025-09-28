@@ -1,17 +1,82 @@
 package me.duong.mrp.service;
 
-import me.duong.mrp.Logger;
+import me.duong.mrp.entity.Media;
+import me.duong.mrp.entity.Rating;
+import me.duong.mrp.repository.*;
+import me.duong.mrp.utils.Logger;
 import me.duong.mrp.utils.security.TokenStore;
-import me.duong.mrp.model.User;
-import me.duong.mrp.repository.DbException;
-import me.duong.mrp.repository.DbSession;
-import me.duong.mrp.repository.UserRepository;
+import me.duong.mrp.entity.User;
 import me.duong.mrp.utils.security.HashingUtils;
 
 import java.util.Base64;
+import java.util.List;
 import java.util.Optional;
 
 public class UserService {
+    public Optional<User> getUserById(int id) {
+        DbSession session = new DbSession();
+        try (session) {
+            UserRepository repository = new UserRepository(session);
+            var result = repository.findUserById(id);
+            session.commit();
+            return result;
+        } catch (Exception exception) {
+            Logger.error("Session failed to execute: %s", exception.getMessage());
+            session.rollback();
+            throw new DbException(exception.getMessage());
+        }
+    }
+
+    public List<Media> getUserFavorites(int userId) {
+        DbSession session = new DbSession();
+        try (session) {
+            MediaRepository repository = new MediaRepository(session);
+            var result = repository.findAllFavorites(userId);
+            session.commit();
+            return result;
+        } catch (Exception exception) {
+            Logger.error("Session failed to execute: %s", exception.getMessage());
+            session.rollback();
+            throw new DbException(exception.getMessage());
+        }
+    }
+
+    public List<Rating> getUserRatingHistory(int userId) {
+        DbSession session = new DbSession();
+        try (session) {
+            RatingRepository repository = new RatingRepository(session);
+            var result = repository.findUserRatings(userId);
+            session.commit();
+            return result;
+        } catch (Exception exception) {
+            Logger.error("Session failed to execute: %s", exception.getMessage());
+            session.rollback();
+            throw new DbException(exception.getMessage());
+        }
+    }
+
+    public Optional<User> updateUser(User user) {
+        DbSession session = new DbSession();
+        try (session) {
+            if (user.getPassword() != null && !user.getPassword().isBlank()) {
+                var salt = HashingUtils.createSalt();
+                var password = HashingUtils.hashPassword(user.getPassword(), salt);
+                if (password.isEmpty()) {
+                    return Optional.empty();
+                }
+                user.setPassword(password.get());
+                user.setSalt(Base64.getEncoder().encodeToString(salt));
+            }
+            UserRepository repository = new UserRepository(session);
+            var result = repository.updateUser(user);
+            session.commit();
+            return Optional.of(result);
+        } catch (Exception exception) {
+            Logger.error("Session failed to execute: %s", exception.getMessage());
+            session.rollback();
+            throw new DbException(exception.getMessage());
+        }
+    }
 
     public Optional<String> loginUser(User loginDto) {
         DbSession session = new DbSession();
