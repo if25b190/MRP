@@ -1,4 +1,4 @@
-package me.duong.mrp.model;
+package me.duong.mrp.entity;
 
 public abstract class Entity<T> {
     protected T id;

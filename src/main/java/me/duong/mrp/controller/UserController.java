@@ -1,6 +1,6 @@
 package me.duong.mrp.controller;
 
-import me.duong.mrp.model.User;
+import me.duong.mrp.entity.User;
 import me.duong.mrp.service.UserService;
 import me.duong.mrp.presentation.Controller;
 import me.duong.mrp.presentation.Method;
@@ -44,19 +44,55 @@ public class UserController {
 
     @Controller(path = "/api/users/:id/profile")
     public static void getUserProfile(Request request) {
-        Responders.sendResponse(request, 200, request.wildcards().get("id") + request.userId());
+        var id = Guards.verifyWildcardInt(request, "id");
+        if (id == -1) return;
+        var service = new UserService();
+        var result = service.getUserById(id);
+        if (result.isPresent()) {
+            var response = DtoParser.toJson(result.get());
+            Responders.sendResponse(request, 200, response);
+        } else {
+            Responders.sendResponse(request, 404);
+        }
     }
 
-    @Controller(path = "/api/users/:id/profile", method = Method.PUT)
+    @Controller(path = "/api/users/profile", method = Method.PUT)
     public static void updateUserProfile(Request request) {
+        var dto = DtoParser.parseJson(request.body(), User.class);
+        if (dto.isEmpty() || (dto.get().getEmail() == null && dto.get().getFavoriteGenre() == null)) {
+            Responders.sendResponse(request, 400);
+            return;
+        }
+        var user = dto.get();
+        user.setId(request.userId());
+        var service = new UserService();
+        var result = service.updateUser(dto.get());
+        if (result.isPresent()) {
+            var response = DtoParser.toJson(result.get());
+            Responders.sendResponse(request, 200, response);
+        } else {
+            Responders.sendResponse(request, 400);
+        }
     }
 
     @Controller(path = "/api/users/:id/ratings")
     public static void getUserRatings(Request request) {
+        var id = Guards.verifyWildcardInt(request, "id");
+        if (id == -1) return;
+        var service = new UserService();
+        var result = service.getUserRatingHistory(id);
+        var response = DtoParser.toJson(result);
+        Responders.sendResponse(request, 200, response);
     }
 
     @Controller(path = "/api/users/:id/favorites")
     public static void getUserFavorites(Request request) {
+        var id = Guards.verifyWildcardInt(request, "id");
+        if (id == -1) return;
+        var service = new UserService();
+        var result = service.getUserFavorites(id);
+        var response = DtoParser.toJson(result);
+        Responders.sendResponse(request, 200, response);
     }
 
     @Controller(path = "/api/users/:id/recommendations")

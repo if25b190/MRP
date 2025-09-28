@@ -1,6 +1,6 @@
 package me.duong.mrp.controller;
 
-import me.duong.mrp.model.Media;
+import me.duong.mrp.entity.Media;
 import me.duong.mrp.model.MediaFilter;
 import me.duong.mrp.service.MediaService;
 import me.duong.mrp.presentation.Controller;
@@ -22,10 +22,8 @@ public class MediaController {
 
     @Controller(path = "/api/media/:id")
     public static void getMediaById(Request request) {
-        if (!Guards.verifyWildcardInt(request, "id")) {
-            return;
-        }
-        var id = Integer.parseInt(request.wildcards().get("id"));
+        var id = Guards.verifyWildcardInt(request, "id");
+        if (id == -1) return;
         var service = new MediaService();
         var result = service.getMediaById(id);
         if (result.isPresent()) {
@@ -43,6 +41,7 @@ public class MediaController {
             return;
         }
         var media = dto.get();
+        media.setUserId(request.userId());
         var service = new MediaService();
         var result = service.createMedia(media);
         String response = DtoParser.toJson(result);
@@ -51,16 +50,15 @@ public class MediaController {
 
     @Controller(path = "/api/media/:id", method = Method.PUT)
     public static void updateMedia(Request request) {
-        if (!Guards.verifyWildcardInt(request, "id")) {
-            return;
-        }
-        var id = Integer.parseInt(request.wildcards().get("id"));
+        var id = Guards.verifyWildcardInt(request, "id");
+        if (id == -1) return;
         var dto = DtoParser.parseJson(request.body(), Media.class);
         if (!Guards.checkDto(request, dto)) {
             return;
         }
         var media = dto.get();
         media.setId(id);
+        media.setUserId(request.userId());
         var service = new MediaService();
         var result = service.updateMedia(media);
         if (result.isPresent()) {
@@ -73,20 +71,28 @@ public class MediaController {
 
     @Controller(path = "/api/media/:id", method = Method.DELETE)
     public static void deleteMedia(Request request) {
-        if (!Guards.verifyWildcardInt(request, "id")) {
-            return;
-        }
-        var id = Integer.parseInt(request.wildcards().get("id"));
+        var id = Guards.verifyWildcardInt(request, "id");
+        if (id == -1) return;
         var service = new MediaService();
-        service.deleteMedia(id);
+        service.deleteMedia(id, request.userId());
         Responders.sendResponse(request, 204);
     }
 
     @Controller(path = "/api/media/:id/favorite", method = Method.POST)
     public static void markFavoriteMedia(Request request) {
+        var mediaId = Guards.verifyWildcardInt(request, "id");
+        if (mediaId == -1) return;
+        var service = new MediaService();
+        service.markMediaAsFavorite(request.userId(), mediaId);
+        Responders.sendResponse(request, 200);
     }
 
     @Controller(path = "/api/media/:id/favorite", method = Method.DELETE)
     public static void unmarkFavoriteMedia(Request request) {
+        var mediaId = Guards.verifyWildcardInt(request, "id");
+        if (mediaId == -1) return;
+        var service = new MediaService();
+        service.unmarkMediaAsFavorite(request.userId(), mediaId);
+        Responders.sendResponse(request, 200);
     }
 }
