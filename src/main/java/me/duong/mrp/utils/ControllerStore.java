@@ -1,4 +1,4 @@
-package me.duong.mrp;
+package me.duong.mrp.utils;
 
 import me.duong.mrp.presentation.Mapping;
 import me.duong.mrp.presentation.Request;

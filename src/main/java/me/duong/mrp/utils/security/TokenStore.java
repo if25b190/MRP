@@ -1,6 +1,6 @@
 package me.duong.mrp.utils.security;
 
-import me.duong.mrp.model.User;
+import me.duong.mrp.entity.User;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;

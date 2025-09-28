@@ -1,10 +1,14 @@
-package me.duong.mrp.model;
+package me.duong.mrp.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import me.duong.mrp.model.BaseValidator;
+import me.duong.mrp.model.MediaType;
 
 import java.util.List;
 
 public class Media extends Entity<Integer> implements BaseValidator {
+    private int userId;
     private String title;
     private String description;
     private String mediaType;
@@ -15,6 +19,16 @@ public class Media extends Entity<Integer> implements BaseValidator {
     @Override
     public Media setId(Integer id) {
         super.setId(id);
+        return this;
+    }
+
+    @JsonIgnore
+    public int getUserId() {
+        return userId;
+    }
+
+    public Media setUserId(int userId) {
+        this.userId = userId;
         return this;
     }
 
