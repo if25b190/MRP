@@ -1,72 +1,57 @@
 package me.duong.mrp.service;
 
-import me.duong.mrp.utils.Logger;
 import me.duong.mrp.entity.Rating;
-import me.duong.mrp.repository.DbException;
-import me.duong.mrp.repository.DbSession;
 import me.duong.mrp.repository.RatingRepository;
 
 import java.util.Optional;
 
-public class RatingService {
-    public Rating createRating(Rating rating) {
-        DbSession session = new DbSession();
-        try (session) {
+public class RatingService extends BaseService {
+    public Optional<Rating> createRating(Rating rating) {
+        return super.callDbSession(session -> {
             RatingRepository repository = new RatingRepository(session);
-            var result = repository.insertRating(rating);
-            session.commit();
-            return result;
-        } catch (Exception exception) {
-            Logger.error("Session failed to execute: %s", exception.getMessage());
-            session.rollback();
-            throw new DbException(exception.getMessage());
-        }
+            if (repository.checkRatingExists(rating.getUserId(), rating.getMediaId())) {
+                return Optional.empty();
+            }
+            return Optional.of(repository.insertRating(rating));
+        });
     }
 
     public Optional<Rating> updateRating(Rating rating) {
-        DbSession session = new DbSession();
-        try (session) {
+        return super.callDbSession(session -> {
             RatingRepository repository = new RatingRepository(session);
             if (repository.findRatingById(rating.getId()).isEmpty()) {
                 return Optional.empty();
             }
-            var result = repository.updateRating(rating);
-            session.commit();
-            return Optional.of(result);
-        } catch (Exception exception) {
-            Logger.error("Session failed to execute: %s", exception.getMessage());
-            session.rollback();
-            throw new DbException(exception.getMessage());
-        }
+            return Optional.of(repository.updateRating(rating));
+        });
     }
 
-    public boolean likeRating(int userId, int ratingId) {
-        DbSession session = new DbSession();
-        try (session) {
+    public void deleteRating(int id, int userId) {
+        super.callDbSessionWithoutReturn(session -> {
             RatingRepository repository = new RatingRepository(session);
-            if (!repository.checkAlreadyLiked(userId, ratingId)) {
+            repository.deleteRating(id, userId);
+        });
+    }
+
+    public boolean likeRating(int id, int userId) {
+        return super.callDbSession(session -> {
+            RatingRepository repository = new RatingRepository(session);
+            if (repository.checkAlreadyLiked(id, userId)) {
                 return false;
             }
-            repository.likeRating(userId, ratingId);
-            session.commit();
+            repository.likeRating(id, userId);
             return true;
-        } catch (Exception exception) {
-            Logger.error("Session failed to execute: %s", exception.getMessage());
-            session.rollback();
-            throw new DbException(exception.getMessage());
-        }
+        });
     }
 
-    public void confirmRatingComment(int userId, int mediaId) {
-        DbSession session = new DbSession();
-        try (session) {
+    public boolean confirmRatingComment(int id, int userId) {
+        return super.callDbSession(session -> {
             RatingRepository repository = new RatingRepository(session);
-            repository.confirmRatingComment(userId, mediaId);
-            session.commit();
-        } catch (Exception exception) {
-            Logger.error("Session failed to execute: %s", exception.getMessage());
-            session.rollback();
-            throw new DbException(exception.getMessage());
-        }
+            if (repository.isConfirmAllowed(id, userId)) {
+                repository.confirmRatingComment(id);
+                return true;
+            }
+            return false;
+        });
     }
 }
