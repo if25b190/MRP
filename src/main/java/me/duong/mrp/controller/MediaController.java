@@ -15,7 +15,7 @@ public class MediaController {
     public static void getAllMedia(Request request) {
         var filter = MediaFilter.fromQuery(request.query());
         var service = new MediaService();
-        var result = service.getAllMedia(filter);
+        var result = service.getAllMedia(filter, request.userId());
         String response = DtoParser.toJson(result);
         Responders.sendResponse(request, 200, response);
     }
@@ -25,7 +25,7 @@ public class MediaController {
         var id = Guards.verifyWildcardInt(request, "id");
         if (id == -1) return;
         var service = new MediaService();
-        var result = service.getMediaById(id);
+        var result = service.getMediaById(id, request.userId());
         if (result.isPresent()) {
             String response = DtoParser.toJson(result.get());
             Responders.sendResponse(request, 200, response);
@@ -83,8 +83,8 @@ public class MediaController {
         var mediaId = Guards.verifyWildcardInt(request, "id");
         if (mediaId == -1) return;
         var service = new MediaService();
-        service.markMediaAsFavorite(request.userId(), mediaId);
-        Responders.sendResponse(request, 200);
+        var result = service.markMediaAsFavorite(request.userId(), mediaId);
+        Responders.sendResponse(request, result ? 200 : 400);
     }
 
     @Controller(path = "/api/media/:id/favorite", method = Method.DELETE)
@@ -92,7 +92,7 @@ public class MediaController {
         var mediaId = Guards.verifyWildcardInt(request, "id");
         if (mediaId == -1) return;
         var service = new MediaService();
-        service.unmarkMediaAsFavorite(request.userId(), mediaId);
-        Responders.sendResponse(request, 200);
+        var result = service.unmarkMediaAsFavorite(request.userId(), mediaId);
+        Responders.sendResponse(request, result ? 204 : 400);
     }
 }

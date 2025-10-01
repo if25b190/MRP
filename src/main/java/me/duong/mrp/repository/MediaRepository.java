@@ -16,7 +16,11 @@ public class MediaRepository extends BaseRepository<Media> {
 
     public Optional<Media> findMediaById(int id) {
         return super.findBy("""
-                        SELECT * FROM media WHERE id = ?
+                         SELECT media.id, media.user_id, title, description, media_type, release_year,
+                         genres, age_restriction, AVG(ratings.stars) as rating
+                         FROM media LEFT JOIN ratings ON media.id = ratings.media_id
+                         WHERE media.id = ?
+                         GROUP BY media.id
                         """,
                 prepared -> prepared.setInt(1, id),
                 MediaRepository::mapMedia);
@@ -30,18 +34,22 @@ public class MediaRepository extends BaseRepository<Media> {
                     if (filter.genre() != null) prepared.setString(i++, filter.genre());
                     if (filter.mediaType() != null) prepared.setString(i++, filter.mediaType());
                     if (filter.releaseYear() != -1) prepared.setInt(i++, filter.releaseYear());
-                    if (filter.ageRestriction() != -1) prepared.setInt(i, filter.ageRestriction());
-                    // if (filter.rating() != -1) prepared.setFloat(i++, filter.rating());
+                    if (filter.ageRestriction() != -1) prepared.setInt(i++, filter.ageRestriction());
+                    if (filter.rating() != -1) prepared.setFloat(i, filter.rating());
                 },
                 MediaRepository::mapMedia);
     }
 
     public List<Media> findAllFavorites(int userId) {
         return super.findAll("""
-                        SELECT id, user_id, title, description, media_type, release_year, genres, age_restriction\s
-                        FROM media INNER JOIN favorites ON media.id = favorites.media_id\s
-                        WHERE favorites.user_id = ?
-                       \s""",
+                         SELECT media.id, media.user_id, title, description, media_type, release_year,
+                         genres, age_restriction,
+                         (SELECT AVG(stars) FROM ratings where media_id = media.id) as rating
+                         FROM media
+                         LEFT JOIN favorites ON media.id = favorites.media_id
+                         WHERE favorites.user_id = ?
+                         GROUP BY media.id
+                        """,
                 prepared -> prepared.setInt(1, userId),
                 MediaRepository::mapMedia);
     }
@@ -87,6 +95,18 @@ public class MediaRepository extends BaseRepository<Media> {
         });
     }
 
+    public boolean checkAlreadyMarked(int userId, int mediaId) {
+        return super.findBy("""
+                                SELECT * FROM favorites WHERE user_id = ? AND media_id = ?
+                                """,
+                        prepared -> {
+                            prepared.setInt(1, userId);
+                            prepared.setInt(2, mediaId);
+                        },
+                        resultSet -> new Media())
+                .isPresent();
+    }
+
     public void markMediaAsFavorite(int userId, int mediaId) {
         super.insert(null, """
                 INSERT INTO favorites (user_id, media_id) VALUES (?, ?)
@@ -108,14 +128,16 @@ public class MediaRepository extends BaseRepository<Media> {
     private static Media mapMedia(ResultSet result) {
         try {
             return new Media()
-                    .setId(result.getInt(1))
-                    .setUserId(result.getInt(2))
-                    .setTitle(result.getString(3))
-                    .setDescription(result.getString(4))
-                    .setMediaType(result.getString(5))
-                    .setReleaseYear(result.getInt(6))
-                    .setGenres(result.getString(7) == null ? null : List.of(result.getString(7).split(",")))
-                    .setAgeRestriction(result.getInt(8));
+                    .setId(result.getInt("id"))
+                    .setUserId(result.getInt("user_id"))
+                    .setTitle(result.getString("title"))
+                    .setDescription(result.getString("description"))
+                    .setMediaType(result.getString("media_type"))
+                    .setReleaseYear(result.getInt("release_year"))
+                    .setGenres(result.getString("genres") == null ?
+                            null : List.of(result.getString("genres").split(",")))
+                    .setAgeRestriction(result.getInt("age_restriction"))
+                    .setScore(result.getFloat("rating"));
         } catch (SQLException exception) {
             Logger.error("Failed to map user: %s", exception.getMessage());
             throw new DbException("Failed to map user", exception);

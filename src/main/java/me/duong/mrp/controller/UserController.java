@@ -59,7 +59,7 @@ public class UserController {
     @Controller(path = "/api/users/profile", method = Method.PUT)
     public static void updateUserProfile(Request request) {
         var dto = DtoParser.parseJson(request.body(), User.class);
-        if (dto.isEmpty() || (dto.get().getEmail() == null && dto.get().getFavoriteGenre() == null)) {
+        if (dto.isEmpty()) {
             Responders.sendResponse(request, 400);
             return;
         }
@@ -80,7 +80,7 @@ public class UserController {
         var id = Guards.verifyWildcardInt(request, "id");
         if (id == -1) return;
         var service = new UserService();
-        var result = service.getUserRatingHistory(id);
+        var result = service.getUserRatingHistory(id, request.userId());
         var response = DtoParser.toJson(result);
         Responders.sendResponse(request, 200, response);
     }
@@ -90,7 +90,7 @@ public class UserController {
         var id = Guards.verifyWildcardInt(request, "id");
         if (id == -1) return;
         var service = new UserService();
-        var result = service.getUserFavorites(id);
+        var result = service.getUserFavorites(id, request.userId());
         var response = DtoParser.toJson(result);
         Responders.sendResponse(request, 200, response);
     }

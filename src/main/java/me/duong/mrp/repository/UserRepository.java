@@ -70,12 +70,12 @@ public class UserRepository extends BaseRepository<User> {
     private static User mapUser(ResultSet result) {
         try {
             return new User()
-                    .setId(result.getInt(1))
-                    .setUsername(result.getString(2))
-                    .setEmail(result.getString(2))
-                    .setPassword(result.getString(4))
-                    .setSalt(result.getString(5))
-                    .setFavoriteGenre(result.getString(6));
+                    .setId(result.getInt("id"))
+                    .setUsername(result.getString("username"))
+                    .setEmail(result.getString("email"))
+                    .setPassword(result.getString("password"))
+                    .setSalt(result.getString("salt"))
+                    .setFavoriteGenre(result.getString("favorite_genre"));
         } catch (SQLException exception) {
             Logger.error("Failed to map user: %s", exception.getMessage());
             throw new DbException("Failed to map user", exception);
