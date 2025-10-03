@@ -7,16 +7,18 @@ import me.duong.mrp.presentation.Controller;
 import me.duong.mrp.presentation.Method;
 import me.duong.mrp.presentation.Request;
 import me.duong.mrp.presentation.Responders;
-import me.duong.mrp.utils.parser.DtoParser;
+import me.duong.mrp.utils.Injector;
+import me.duong.mrp.utils.parser.DtoReader;
+import me.duong.mrp.utils.parser.DtoWriter;
 import me.duong.mrp.utils.parser.Guards;
 
 public class MediaController {
     @Controller(path = "/api/media")
     public static void getAllMedia(Request request) {
         var filter = MediaFilter.fromQuery(request.query());
-        var service = new MediaService();
+        var service = Injector.INSTANCE.resolve(MediaService.class);
         var result = service.getAllMedia(filter, request.userId());
-        String response = DtoParser.toJson(result);
+        String response = DtoWriter.writeJson(result);
         Responders.sendResponse(request, 200, response);
     }
 
@@ -24,10 +26,10 @@ public class MediaController {
     public static void getMediaById(Request request) {
         var id = Guards.verifyWildcardInt(request, "id");
         if (id == -1) return;
-        var service = new MediaService();
+        var service = Injector.INSTANCE.resolve(MediaService.class);
         var result = service.getMediaById(id, request.userId());
         if (result.isPresent()) {
-            String response = DtoParser.toJson(result.get());
+            String response = DtoWriter.writeJson(result.get());
             Responders.sendResponse(request, 200, response);
         } else {
             Responders.sendResponse(request, 404);
@@ -36,15 +38,15 @@ public class MediaController {
 
     @Controller(path = "/api/media", method = Method.POST)
     public static void createMedia(Request request) {
-        var dto = DtoParser.parseJson(request.body(), Media.class);
+        var dto = DtoReader.readJson(request.body(), Media.class);
         if (!Guards.checkDto(request, dto)) {
             return;
         }
         var media = dto.get();
         media.setUserId(request.userId());
-        var service = new MediaService();
+        var service = Injector.INSTANCE.resolve(MediaService.class);
         var result = service.createMedia(media);
-        String response = DtoParser.toJson(result);
+        String response = DtoWriter.writeJson(result);
         Responders.sendResponse(request, 201, response);
     }
 
@@ -52,17 +54,17 @@ public class MediaController {
     public static void updateMedia(Request request) {
         var id = Guards.verifyWildcardInt(request, "id");
         if (id == -1) return;
-        var dto = DtoParser.parseJson(request.body(), Media.class);
+        var dto = DtoReader.readJson(request.body(), Media.class);
         if (!Guards.checkDto(request, dto)) {
             return;
         }
         var media = dto.get();
         media.setId(id);
         media.setUserId(request.userId());
-        var service = new MediaService();
+        var service = Injector.INSTANCE.resolve(MediaService.class);
         var result = service.updateMedia(media);
         if (result.isPresent()) {
-            String response = DtoParser.toJson(result.get());
+            String response = DtoWriter.writeJson(result.get());
             Responders.sendResponse(request, 200, response);
         } else {
             Responders.sendResponse(request, 404);
@@ -73,7 +75,7 @@ public class MediaController {
     public static void deleteMedia(Request request) {
         var id = Guards.verifyWildcardInt(request, "id");
         if (id == -1) return;
-        var service = new MediaService();
+        var service = Injector.INSTANCE.resolve(MediaService.class);
         service.deleteMedia(id, request.userId());
         Responders.sendResponse(request, 204);
     }
@@ -82,7 +84,7 @@ public class MediaController {
     public static void markFavoriteMedia(Request request) {
         var mediaId = Guards.verifyWildcardInt(request, "id");
         if (mediaId == -1) return;
-        var service = new MediaService();
+        var service = Injector.INSTANCE.resolve(MediaService.class);
         var result = service.markMediaAsFavorite(request.userId(), mediaId);
         Responders.sendResponse(request, result ? 200 : 400);
     }
@@ -91,7 +93,7 @@ public class MediaController {
     public static void unmarkFavoriteMedia(Request request) {
         var mediaId = Guards.verifyWildcardInt(request, "id");
         if (mediaId == -1) return;
-        var service = new MediaService();
+        var service = Injector.INSTANCE.resolve(MediaService.class);
         var result = service.unmarkMediaAsFavorite(request.userId(), mediaId);
         Responders.sendResponse(request, result ? 204 : 400);
     }

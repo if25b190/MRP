@@ -1,5 +1,7 @@
 package me.duong.mrp.utils;
 
+import me.duong.mrp.MRP;
+
 import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -38,7 +40,15 @@ public class AnnotationScanner {
             ClassLoader classLoader = ClassLoader.getSystemClassLoader();
             String path = packageName.replace('.', '/');
             List<Class<?>> classes = new ArrayList<>();
+            var packageUrls = classLoader.getResources(path);
             var packageUrl = classLoader.getResource(path);
+            while (packageUrls.hasMoreElements()) {
+                var elem = packageUrls.nextElement();
+                if (!"jar".equals(elem.getProtocol()) && !elem.getPath().contains("test-classes")) {
+                    packageUrl = elem;
+                    break;
+                }
+            }
             if (packageUrl != null && "jar".equals(packageUrl.getProtocol())) {
                 String jarFileName = URLDecoder.decode(packageUrl.getFile(), StandardCharsets.UTF_8);
                 jarFileName = jarFileName.substring(5, jarFileName.indexOf("!"));
@@ -57,8 +67,8 @@ public class AnnotationScanner {
                         }
                     }
                 }
-            } else {
-                try (InputStream in = classLoader.getResourceAsStream(path)) {
+            } else if (packageUrl != null) {
+                try (InputStream in = packageUrl.openStream()) {
                     if (in != null) {
                         try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
                             reader.lines()

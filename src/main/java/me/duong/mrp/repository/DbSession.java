@@ -1,5 +1,6 @@
 package me.duong.mrp.repository;
 
+import me.duong.mrp.utils.Injector;
 import me.duong.mrp.utils.Logger;
 
 import java.sql.*;
@@ -48,7 +49,7 @@ public class DbSession implements AutoCloseable {
     }
 
     private void createConnection() {
-        connection = DbConnection.INSTANCE.getConnection();
+        connection = Injector.INSTANCE.resolve(Connection.class);
     }
 
     private void disableAutoCommit() {

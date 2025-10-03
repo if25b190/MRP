@@ -2,6 +2,7 @@ package me.duong.mrp.service;
 
 import me.duong.mrp.repository.DbException;
 import me.duong.mrp.repository.DbSession;
+import me.duong.mrp.utils.Injector;
 import me.duong.mrp.utils.Logger;
 
 import java.util.function.Consumer;
@@ -9,7 +10,7 @@ import java.util.function.Function;
 
 public abstract class BaseService {
     protected <R> R callDbSession(Function<DbSession, R> function) {
-        DbSession session = new DbSession();
+        DbSession session = Injector.INSTANCE.resolve(DbSession.class);
         try (session) {
             var result = function.apply(session);
             session.commit();

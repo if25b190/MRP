@@ -2,97 +2,21 @@ package me.duong.mrp.service;
 
 import me.duong.mrp.entity.Media;
 import me.duong.mrp.entity.Rating;
-import me.duong.mrp.repository.*;
-import me.duong.mrp.utils.security.TokenStore;
 import me.duong.mrp.entity.User;
-import me.duong.mrp.utils.security.HashingUtils;
 
-import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
-public class UserService extends BaseService {
-    public Optional<User> getUserById(int id) {
-        return super.callDbSession(session -> {
-            UserRepository repository = new UserRepository(session);
-            return repository.findUserById(id);
-        });
-    }
+public interface UserService {
+    Optional<User> getUserById(int id);
 
-    public List<Media> getUserFavorites(int userId, int loggedId) {
-        return super.callDbSession(session -> {
-            MediaRepository repository = new MediaRepository(session);
-            RatingRepository ratingRepository = new RatingRepository(session);
-            return repository.findAllFavorites(userId).stream().map(media ->
-                            media.setRatings(ratingRepository.findAllFilteredRatingsByMediaId(media.getId(), loggedId)))
-                    .toList();
-        });
-    }
+    List<Media> getUserFavorites(int userId, int loggedId);
 
-    public List<Rating> getUserRatingHistory(int userId, int loggedId) {
-        return super.callDbSession(session -> {
-            RatingRepository repository = new RatingRepository(session);
-            var result = repository.findUserRatings(userId);
-            if (userId != loggedId) {
-                result = result.stream().peek(rating -> {
-                    if (!repository.isCommentAllowed(rating.getId(), userId)) {
-                        rating.setComment(null);
-                    }
-                }).toList();
-            }
-            return result;
-        });
-    }
+    List<Rating> getUserRatingHistory(int userId, int loggedId);
 
-    public Optional<User> updateUser(User user) {
-        return super.callDbSession(session -> {
-            if (user.getPassword() != null && !user.getPassword().isBlank()) {
-                var salt = HashingUtils.createSalt();
-                var password = HashingUtils.hashPassword(user.getPassword(), salt);
-                if (password.isEmpty()) {
-                    return Optional.empty();
-                }
-                user.setPassword(password.get());
-                user.setSalt(Base64.getEncoder().encodeToString(salt));
-            }
-            UserRepository repository = new UserRepository(session);
-            return Optional.of(repository.updateUser(user));
-        });
-    }
+    Optional<User> updateUser(User user);
 
-    public Optional<String> loginUser(User loginDto) {
-        return super.callDbSession(session -> {
-            UserRepository userRepository = new UserRepository(session);
-            var result = userRepository.findUserByUsername(loginDto.getUsername());
-            if (result.isPresent()) {
-                var user = result.get();
-                var salt = Base64.getDecoder().decode(user.getSalt());
-                var pass = HashingUtils.hashPassword(loginDto.getPassword(), salt);
-                if (pass.filter(s -> s.equals(user.getPassword())).isPresent()) {
-                    return Optional.of(TokenStore.INSTANCE.createToken(user));
-                }
-            }
-            return Optional.empty();
-        });
-    }
+    Optional<String> loginUser(User loginDto);
 
-    public Optional<User> registerUser(User loginDto) {
-        return super.callDbSession(session -> {
-            UserRepository userRepository = new UserRepository(session);
-            if (userRepository.findUserByUsername(loginDto.getUsername()).isPresent()) {
-                return Optional.empty();
-            }
-            var salt = HashingUtils.createSalt();
-            var password = HashingUtils.hashPassword(loginDto.getPassword(), salt);
-            if (password.isEmpty()) {
-                return Optional.empty();
-            }
-            User user = new User()
-                    .setUsername(loginDto.getUsername())
-                    .setPassword(password.get())
-                    .setSalt(Base64.getEncoder().encodeToString(salt));
-            return Optional.of(userRepository.insertUser(user));
-        });
-    }
-
+    Optional<User> registerUser(User loginDto);
 }
