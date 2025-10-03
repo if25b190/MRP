@@ -6,6 +6,7 @@ import me.duong.mrp.presentation.Method;
 import me.duong.mrp.presentation.Request;
 import me.duong.mrp.presentation.Responders;
 import me.duong.mrp.service.RatingService;
+import me.duong.mrp.utils.Injector;
 import me.duong.mrp.utils.parser.DtoReader;
 import me.duong.mrp.utils.parser.DtoWriter;
 import me.duong.mrp.utils.parser.Guards;
@@ -22,7 +23,7 @@ public class RatingController {
         var rating = dto.get();
         rating.setMediaId(mediaId);
         rating.setUserId(request.userId());
-        var service = new RatingService();
+        var service = Injector.INSTANCE.resolve(RatingService.class);
         var result = service.createRating(rating);
         if (result.isPresent()) {
             String response = DtoWriter.writeJson(result.get());
@@ -36,7 +37,7 @@ public class RatingController {
     public static void likeRatings(Request request) {
         var id = Guards.verifyWildcardInt(request, "id");
         if (id == -1) return;
-        var service = new RatingService();
+        var service = Injector.INSTANCE.resolve(RatingService.class);
         var result = service.likeRating(id, request.userId());
         Responders.sendResponse(request, result ? 200 : 400);
     }
@@ -52,7 +53,7 @@ public class RatingController {
         var rating = dto.get();
         rating.setId(id);
         rating.setUserId(request.userId());
-        var service = new RatingService();
+        var service = Injector.INSTANCE.resolve(RatingService.class);
         var result = service.updateRating(rating);
         String response = DtoWriter.writeJson(result);
         Responders.sendResponse(request, 200, response);
@@ -62,7 +63,7 @@ public class RatingController {
     public static void deleteRating(Request request) {
         var id = Guards.verifyWildcardInt(request, "id");
         if (id == -1) return;
-        var service = new RatingService();
+        var service = Injector.INSTANCE.resolve(RatingService.class);
         service.deleteRating(id, request.userId());
         Responders.sendResponse(request, 204);
     }
@@ -71,7 +72,7 @@ public class RatingController {
     public static void confirmRating(Request request) {
         var id = Guards.verifyWildcardInt(request, "id");
         if (id == -1) return;
-        var service = new RatingService();
+        var service = Injector.INSTANCE.resolve(RatingService.class);
         var result = service.confirmRatingComment(id, request.userId());
         Responders.sendResponse(request, result ? 200 : 400);
     }

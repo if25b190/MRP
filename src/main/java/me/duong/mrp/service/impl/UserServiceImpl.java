@@ -5,6 +5,7 @@ import me.duong.mrp.entity.Rating;
 import me.duong.mrp.repository.*;
 import me.duong.mrp.service.BaseService;
 import me.duong.mrp.service.UserService;
+import me.duong.mrp.utils.Injector;
 import me.duong.mrp.utils.security.TokenStore;
 import me.duong.mrp.entity.User;
 import me.duong.mrp.utils.security.HashingUtils;
@@ -17,7 +18,7 @@ public class UserServiceImpl extends BaseService implements UserService {
     @Override
     public Optional<User> getUserById(int id) {
         return super.callDbSession(session -> {
-            UserRepository repository = new UserRepository(session);
+            UserRepository repository = Injector.INSTANCE.resolve(UserRepository.class, session);
             return repository.findUserById(id);
         });
     }
@@ -25,8 +26,8 @@ public class UserServiceImpl extends BaseService implements UserService {
     @Override
     public List<Media> getUserFavorites(int userId, int loggedId) {
         return super.callDbSession(session -> {
-            MediaRepository repository = new MediaRepository(session);
-            RatingRepository ratingRepository = new RatingRepository(session);
+            MediaRepository repository = Injector.INSTANCE.resolve(MediaRepository.class, session);
+            RatingRepository ratingRepository = Injector.INSTANCE.resolve(RatingRepository.class, session);
             return repository.findAllFavorites(userId).stream().map(media ->
                             media.setRatings(ratingRepository.findAllFilteredRatingsByMediaId(media.getId(), loggedId)))
                     .toList();
@@ -36,7 +37,7 @@ public class UserServiceImpl extends BaseService implements UserService {
     @Override
     public List<Rating> getUserRatingHistory(int userId, int loggedId) {
         return super.callDbSession(session -> {
-            RatingRepository repository = new RatingRepository(session);
+            RatingRepository repository = Injector.INSTANCE.resolve(RatingRepository.class, session);
             var result = repository.findUserRatings(userId);
             if (userId != loggedId) {
                 result = result.stream().peek(rating -> {
@@ -61,7 +62,7 @@ public class UserServiceImpl extends BaseService implements UserService {
                 user.setPassword(password.get());
                 user.setSalt(Base64.getEncoder().encodeToString(salt));
             }
-            UserRepository repository = new UserRepository(session);
+            UserRepository repository = Injector.INSTANCE.resolve(UserRepository.class, session);
             return Optional.of(repository.updateUser(user));
         });
     }
@@ -69,7 +70,7 @@ public class UserServiceImpl extends BaseService implements UserService {
     @Override
     public Optional<String> loginUser(User loginDto) {
         return super.callDbSession(session -> {
-            UserRepository userRepository = new UserRepository(session);
+            UserRepository userRepository = Injector.INSTANCE.resolve(UserRepository.class, session);
             var result = userRepository.findUserByUsername(loginDto.getUsername());
             if (result.isPresent()) {
                 var user = result.get();
@@ -86,7 +87,7 @@ public class UserServiceImpl extends BaseService implements UserService {
     @Override
     public Optional<User> registerUser(User loginDto) {
         return super.callDbSession(session -> {
-            UserRepository userRepository = new UserRepository(session);
+            UserRepository userRepository = Injector.INSTANCE.resolve(UserRepository.class, session);
             if (userRepository.findUserByUsername(loginDto.getUsername()).isPresent()) {
                 return Optional.empty();
             }

@@ -22,21 +22,21 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 
 public class UserControllerTest {
-    private static final UserService userService = mock(UserService.class);
+    private static final UserService USER_SERVICE = mock(UserService.class);
     private final ObjectWriter testingWriter = testingWriter();
     private final ObjectWriter publicWriter = publicWriter();
 
     @BeforeAll
     public static void setUp() {
-        Injector.INSTANCE.setUseMocks(true);
-        Injector.INSTANCE.register(UserService.class, userService);
+        Injector.INSTANCE.register(UserService.class, USER_SERVICE);
         RestServer.INSTANCE.start();
     }
 
     @Test
     public void testRegisterUser() throws IOException, InterruptedException {
         var user = new User().setUsername("user1").setPassword("pass123");
-        lenient().when(userService.registerUser(ArgumentCaptor.forClass(User.class).capture())).thenReturn(Optional.of(user));
+        lenient().when(USER_SERVICE.registerUser(ArgumentCaptor.forClass(User.class).capture()))
+                .thenReturn(Optional.of(user));
         try (var client = HttpClient.newHttpClient()) {
             var body = testingWriter.writeValueAsString(user);
             var request = HttpRequest.newBuilder(getUri("/api/users/register"))
