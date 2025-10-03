@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS media (
   id SERIAL PRIMARY KEY,
   user_id INTEGER,
-  title VARCHAR(512) UNIQUE NOT NULL,
+  title VARCHAR(512) NOT NULL,
   description VARCHAR(1024),
   media_type VARCHAR(512) NOT NULL,
   release_year INTEGER,
