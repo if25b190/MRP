@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import me.duong.mrp.model.BaseValidator;
 import me.duong.mrp.model.MediaType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Media extends Entity<Integer> implements BaseValidator {
@@ -15,6 +16,8 @@ public class Media extends Entity<Integer> implements BaseValidator {
     private int releaseYear;
     private List<String> genres;
     private int ageRestriction;
+    private List<Rating> ratings = new ArrayList<>();
+    private float score;
 
     @Override
     public Media setId(Integer id) {
@@ -89,6 +92,28 @@ public class Media extends Entity<Integer> implements BaseValidator {
     @JsonProperty("ageRestriction")
     public Media setAgeRestriction(int ageRestriction) {
         this.ageRestriction = ageRestriction;
+        return this;
+    }
+
+    @JsonProperty("ratings")
+    public List<Rating> getRatings() {
+        return ratings;
+    }
+
+    @JsonIgnore
+    public Media setRatings(List<Rating> ratings) {
+        this.ratings = ratings;
+        return this;
+    }
+
+    @JsonProperty("score")
+    public float getScore() {
+        return score;
+    }
+
+    @JsonIgnore
+    public Media setScore(float score) {
+        this.score = score;
         return this;
     }
 

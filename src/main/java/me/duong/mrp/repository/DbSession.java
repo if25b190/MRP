@@ -1,9 +1,9 @@
 package me.duong.mrp.repository;
 
+import me.duong.mrp.utils.Injector;
 import me.duong.mrp.utils.Logger;
 
 import java.sql.*;
-import java.util.function.Consumer;
 
 public class DbSession implements AutoCloseable {
 
@@ -49,7 +49,7 @@ public class DbSession implements AutoCloseable {
     }
 
     private void createConnection() {
-        connection = DbConnection.INSTANCE.getConnection();
+        connection = Injector.INSTANCE.resolve(Connection.class);
     }
 
     private void disableAutoCommit() {
@@ -74,16 +74,5 @@ public class DbSession implements AutoCloseable {
     @Override
     public void close() {
         dispose();
-    }
-
-    public static void execute(DbSession session, Consumer<Void> func, Consumer<Exception> callbackError) {
-        try (session) {
-            func.accept(null);
-            session.commit();
-        } catch (Exception exception) {
-            Logger.error("Session failed to execute: %s", exception.getMessage());
-            session.rollback();
-            callbackError.accept(exception);
-        }
     }
 }

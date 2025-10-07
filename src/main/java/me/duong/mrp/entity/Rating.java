@@ -11,7 +11,9 @@ public class Rating extends Entity<Integer> implements BaseValidator {
     private int mediaId;
     private int stars;
     private String comment;
+    private boolean isConfirmed;
     private OffsetDateTime createdAt;
+    private int likes;
 
     @Override
     public Rating setId(Integer id) {
@@ -59,12 +61,32 @@ public class Rating extends Entity<Integer> implements BaseValidator {
         return this;
     }
 
+    public boolean isConfirmed() {
+        return isConfirmed;
+    }
+
+    public Rating setConfirmed(boolean isConfirmed) {
+        this.isConfirmed = isConfirmed;
+        return this;
+    }
+
     public OffsetDateTime getCreatedAt() {
         return createdAt;
     }
 
     public Rating setCreatedAt(OffsetDateTime createdAt) {
         this.createdAt = createdAt;
+        return this;
+    }
+
+    @JsonProperty("likes")
+    public int getLikes() {
+        return likes;
+    }
+
+    @JsonIgnore
+    public Rating setLikes(int likes) {
+        this.likes = likes;
         return this;
     }
 

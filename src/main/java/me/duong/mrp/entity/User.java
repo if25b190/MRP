@@ -2,7 +2,9 @@ package me.duong.mrp.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonView;
 import me.duong.mrp.model.BaseValidator;
+import me.duong.mrp.utils.parser.Views;
 
 public class User extends Entity<Integer> implements BaseValidator {
     private String username;
@@ -37,7 +39,7 @@ public class User extends Entity<Integer> implements BaseValidator {
         return this;
     }
 
-    @JsonIgnore
+    @JsonView(Views.Testing.class)
     public String getPassword() {
         return password;
     }

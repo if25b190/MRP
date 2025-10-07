@@ -21,17 +21,23 @@ public record MediaFilter(
         if (mediaType != null) fields.add("lower(media_type) LIKE ('%' || lower(?) || '%')");
         if (releaseYear != -1) fields.add("release_year = ?");
         if (ageRestriction != -1) fields.add("age_restriction = ?");
-        //if (rating != -1) fields.add("rating = ?");
+        var having = "";
+        if (rating != -1) having = "HAVING round(AVG(ratings.stars)) = ?";
         var where = String.join(" AND ", fields);
         if (!where.isBlank()) where = "WHERE " + where;
         var order = switch (sortBy) {
             case "title" -> "title";
             case "year" -> "release_year DESC";
-            // case "score" -> "rating DESC";
+            case "score" -> "rating DESC";
             default -> "";
         };
         if (!order.isBlank()) order = "ORDER BY " + order;
-        return String.format("SELECT * FROM media %s %s", where, order);
+        return String.format("""
+                SELECT media.id, media.user_id, title, description, media_type, release_year,
+                        genres, age_restriction, AVG(ratings.stars) as rating
+                        FROM media LEFT JOIN ratings ON media.id = ratings.media_id
+                        %s GROUP BY media.id %s %s
+                """, where, having, order);
     }
 
     public static MediaFilter fromQuery(Map<String, List<String>> queries) {
