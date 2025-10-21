@@ -93,12 +93,10 @@ public enum RestServer {
         try {
             var access = method.canAccess(null);
             if (!access) {
-                method.setAccessible(true);
+                Logger.error("Method \"%s\" not accessible!", method.getName());
+                return;
             }
             method.invoke(null, request);
-            if (!access) {
-                method.setAccessible(false);
-            }
         } catch (IllegalAccessException | InvocationTargetException exception) {
             exception.printStackTrace();
             Logger.error("%s: %s", method.getName(), exception.getMessage());
