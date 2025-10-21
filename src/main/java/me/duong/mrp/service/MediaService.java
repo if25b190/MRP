@@ -17,7 +17,7 @@ public interface MediaService {
 
     List<Media> getAllMedia(MediaFilter filter, int loggedId);
 
-    void deleteMedia(int id, int userId);
+    boolean deleteMedia(int id, int userId);
 
     boolean markMediaAsFavorite(int userId, int mediaId);
 
