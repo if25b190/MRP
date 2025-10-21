@@ -9,6 +9,7 @@ Duong Philip
     - JSON Mapping
     - Dependency Injection
     - Next Steps bis zum Final Hand-in
+    - Postman Environment
     - Github Actions
     - Github Repo Link
 
@@ -68,6 +69,13 @@ public abstract class BaseRepository<T extends Entity<Integer>> {
             throw new DbException("Failed to insert entity", exception);  
         }
     }
+    ...
+}
+```
+
+```java
+public interface UserRepository {
+    Optional<User> findUserById(int id);
     ...
 }
 ```
@@ -197,7 +205,10 @@ public enum Injector {
                     var instance = valueClass.getDeclaredConstructor(parameters)
 		                    .newInstance(args);  
                     return clazz.cast(instance);  
-                }                
+                }
+                if (value instanceof Supplier<?> supplier) {
+                    return clazz.cast(supplier.get());
+                }
                 return clazz.cast(value);  
             }        
         } catch (NoSuchMethodException | 
@@ -247,12 +258,28 @@ public class UserController {
 }
 ```
 
+### Jacoco: Unit Testing
+
+Mit Jacoco kann man überprüfen, wie viel Code die Unit Tests abdecken
+und wo noch Unit Tests fehlen könnten.
+z.B: deckt der UserControllerTest derzeit nur einen if-Zweig ab.
+
+![](img/img1.png)
+
 ### Next Steps bis zum Final Hand-in
 
 - Es wäre besser, die Genres beim Media in eine Lookup-Tabelle auszulagern (dadurch kann man auch bestimmen, welche Tags erlaubt sind bzw. existieren)
 - Eventuell HttpStatus Enums hinzufügen statt Integers zu übergeben
 - Recommendations und Leaderboard fertig implementieren
 - mehr Unit-Tests für jeden Layer (Controller, Service, DAL/Repository) hinzufügen
+
+
+### Postman Environment
+
+Damit der Auth Token nach dem Login für alle anderen Request verwendet wird,
+muss in Postman ein Environment erstellt werden:
+
+![](img/img.png)
 
 ### Github Actions
 
@@ -263,4 +290,3 @@ Derzeit wird bei jedem Push "maven:verify" für die Unit Tests ausgeführt:
 ### Github Repo Link
 
 https://github.com/if25b190/MRP
-

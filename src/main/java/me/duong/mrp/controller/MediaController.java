@@ -76,8 +76,8 @@ public class MediaController {
         var id = Guards.verifyWildcardInt(request, "id");
         if (id == -1) return;
         var service = Injector.INSTANCE.resolve(MediaService.class);
-        service.deleteMedia(id, request.userId());
-        Responders.sendResponse(request, 204);
+        var result = service.deleteMedia(id, request.userId());
+        Responders.sendResponse(request, result ? 204 : 404);
     }
 
     @Controller(path = "/api/media/:id/favorite", method = Method.POST)

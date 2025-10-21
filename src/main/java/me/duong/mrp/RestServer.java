@@ -98,8 +98,8 @@ public enum RestServer {
             }
             method.invoke(null, request);
         } catch (IllegalAccessException | InvocationTargetException exception) {
-            exception.printStackTrace();
-            Logger.error("%s: %s", method.getName(), exception.getMessage());
+            exception.printStackTrace(System.err);
+            Logger.error("Method %s failed!", method.toGenericString());
             Responders.sendResponse(request, 500);
         }
     }
