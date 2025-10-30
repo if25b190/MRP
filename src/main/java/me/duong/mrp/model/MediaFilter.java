@@ -17,7 +17,7 @@ public record MediaFilter(
     public String buildPreparedStatement() {
         var fields = new ArrayList<String>();
         if (title != null) fields.add("lower(title) LIKE ('%' || lower(?) || '%')");
-        if (genre != null) fields.add("lower(genres) LIKE ('%' || lower(?) || '%')");
+        if (genre != null) fields.add("lower(?) = ANY(genres)");
         if (mediaType != null) fields.add("lower(media_type) LIKE ('%' || lower(?) || '%')");
         if (releaseYear != -1) fields.add("release_year = ?");
         if (ageRestriction != -1) fields.add("age_restriction = ?");
@@ -25,12 +25,15 @@ public record MediaFilter(
         if (rating != -1) having = "HAVING round(AVG(ratings.stars)) = ?";
         var where = String.join(" AND ", fields);
         if (!where.isBlank()) where = "WHERE " + where;
-        var order = switch (sortBy) {
-            case "title" -> "title";
-            case "year" -> "release_year DESC";
-            case "score" -> "rating DESC";
-            default -> "";
-        };
+        var order = "";
+        if (sortBy != null) {
+            order = switch (sortBy) {
+                case "title" -> "title";
+                case "year" -> "release_year DESC";
+                case "score" -> "rating DESC";
+                default -> "";
+            };
+        }
         if (!order.isBlank()) order = "ORDER BY " + order;
         return String.format("""
                 SELECT media.id, media.user_id, title, description, media_type, release_year,

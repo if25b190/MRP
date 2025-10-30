@@ -10,6 +10,7 @@ import me.duong.mrp.entity.User;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class UserRepositoryImpl extends BaseRepository<User> implements UserRepository {
@@ -32,6 +33,20 @@ public class UserRepositoryImpl extends BaseRepository<User> implements UserRepo
                         SELECT * FROM users WHERE username = ?
                         """,
                 prepared -> prepared.setString(1, username),
+                UserRepositoryImpl::mapUser);
+    }
+
+    @Override
+    public List<User> findLeaderboard() {
+        return super.findAll("""
+                        SELECT u.id, u.username, u.email, u.password, u.salt, u.favorite_genre
+                        FROM users u
+                        LEFT JOIN ratings r ON u.id = r.user_id
+                        GROUP BY u.id
+                        ORDER BY COUNT(r.id) DESC
+                        LIMIT 15
+                        """,
+                prepared -> {},
                 UserRepositoryImpl::mapUser);
     }
 

@@ -1,6 +1,7 @@
 package me.duong.mrp.controller;
 
 import me.duong.mrp.entity.User;
+import me.duong.mrp.service.MediaService;
 import me.duong.mrp.service.UserService;
 import me.duong.mrp.presentation.Controller;
 import me.duong.mrp.presentation.Method;
@@ -100,5 +101,13 @@ public class UserController {
     @Controller(path = "/api/users/:id/recommendations")
     public static void getUserRecommendations(Request request) {
         var type = request.query().get("type");
+        if (type.isEmpty()) {
+            Responders.sendResponse(request, 400);
+            return;
+        }
+        var service = Injector.INSTANCE.resolve(UserService.class);
+        var result = service.getUserRecommendations(request.userId(), type.getFirst());
+        var response = DtoWriter.writeJson(result);
+        Responders.sendResponse(request, 200, response);
     }
 }

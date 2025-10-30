@@ -26,7 +26,15 @@ public class DbSession implements AutoCloseable {
             }
             return connection.prepareStatement(sql);
         } catch (SQLException exception) {
-            throw new DbException(exception.getMessage());
+            throw new DbException(exception);
+        }
+    }
+
+    public Array createArray(String typeName, Object[] elements) {
+        try {
+            return connection.createArrayOf(typeName, elements);
+        } catch (SQLException exception) {
+            throw new DbException(exception);
         }
     }
 
