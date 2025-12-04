@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS media (
   description VARCHAR(1024),
   media_type VARCHAR(512) NOT NULL,
   release_year INTEGER,
-  genres VARCHAR(1024),
+  genres VARCHAR(128)[],
   age_restriction INTEGER,
   CONSTRAINT fk_media_user FOREIGN KEY (user_id) REFERENCES users(id)
 );
