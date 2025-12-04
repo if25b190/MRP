@@ -2,11 +2,8 @@ package me.duong.mrp.controller;
 
 import me.duong.mrp.entity.Media;
 import me.duong.mrp.model.MediaFilter;
+import me.duong.mrp.presentation.*;
 import me.duong.mrp.service.MediaService;
-import me.duong.mrp.presentation.Controller;
-import me.duong.mrp.presentation.Method;
-import me.duong.mrp.presentation.Request;
-import me.duong.mrp.presentation.Responders;
 import me.duong.mrp.utils.Injector;
 import me.duong.mrp.utils.parser.DtoReader;
 import me.duong.mrp.utils.parser.DtoWriter;
@@ -19,7 +16,7 @@ public class MediaController {
         var service = Injector.INSTANCE.resolve(MediaService.class);
         var result = service.getAllMedia(filter, request.userId());
         String response = DtoWriter.writeJson(result);
-        Responders.sendResponse(request, 200, response);
+        Responders.sendResponse(request, HttpStatusCode.OK, response);
     }
 
     @Controller(path = "/api/media/:id")
@@ -30,9 +27,9 @@ public class MediaController {
         var result = service.getMediaById(id, request.userId());
         if (result.isPresent()) {
             String response = DtoWriter.writeJson(result.get());
-            Responders.sendResponse(request, 200, response);
+            Responders.sendResponse(request, HttpStatusCode.OK, response);
         } else {
-            Responders.sendResponse(request, 404);
+            Responders.sendResponse(request, HttpStatusCode.NOT_FOUND);
         }
     }
 
@@ -47,7 +44,7 @@ public class MediaController {
         var service = Injector.INSTANCE.resolve(MediaService.class);
         var result = service.createMedia(media);
         String response = DtoWriter.writeJson(result);
-        Responders.sendResponse(request, 201, response);
+        Responders.sendResponse(request, HttpStatusCode.CREATED, response);
     }
 
     @Controller(path = "/api/media/:id", method = Method.PUT)
@@ -65,9 +62,9 @@ public class MediaController {
         var result = service.updateMedia(media);
         if (result.isPresent()) {
             String response = DtoWriter.writeJson(result.get());
-            Responders.sendResponse(request, 200, response);
+            Responders.sendResponse(request, HttpStatusCode.OK, response);
         } else {
-            Responders.sendResponse(request, 404);
+            Responders.sendResponse(request, HttpStatusCode.NOT_FOUND);
         }
     }
 
@@ -77,7 +74,7 @@ public class MediaController {
         if (id == -1) return;
         var service = Injector.INSTANCE.resolve(MediaService.class);
         var result = service.deleteMedia(id, request.userId());
-        Responders.sendResponse(request, result ? 204 : 404);
+        Responders.sendResponse(request, result ? HttpStatusCode.NO_CONTENT : HttpStatusCode.NOT_FOUND);
     }
 
     @Controller(path = "/api/media/:id/favorite", method = Method.POST)
@@ -86,7 +83,7 @@ public class MediaController {
         if (mediaId == -1) return;
         var service = Injector.INSTANCE.resolve(MediaService.class);
         var result = service.markMediaAsFavorite(request.userId(), mediaId);
-        Responders.sendResponse(request, result ? 200 : 400);
+        Responders.sendResponse(request, result ? HttpStatusCode.OK : HttpStatusCode.BAD_REQUEST);
     }
 
     @Controller(path = "/api/media/:id/favorite", method = Method.DELETE)
@@ -95,6 +92,6 @@ public class MediaController {
         if (mediaId == -1) return;
         var service = Injector.INSTANCE.resolve(MediaService.class);
         var result = service.unmarkMediaAsFavorite(request.userId(), mediaId);
-        Responders.sendResponse(request, result ? 204 : 400);
+        Responders.sendResponse(request, result ? HttpStatusCode.NO_CONTENT : HttpStatusCode.BAD_REQUEST);
     }
 }

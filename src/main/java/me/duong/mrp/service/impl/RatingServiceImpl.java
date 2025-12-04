@@ -32,10 +32,14 @@ public class RatingServiceImpl extends BaseService implements RatingService {
     }
 
     @Override
-    public void deleteRating(int id, int userId) {
-        super.callDbSessionWithoutReturn(session -> {
+    public boolean deleteRating(int id, int userId) {
+        return super.callDbSession(session -> {
             RatingRepository repository = Injector.INSTANCE.resolve(RatingRepository.class, session);
+            if (!repository.checkRatingExists(id, userId)) {
+                return false;
+            }
             repository.deleteRating(id, userId);
+            return true;
         });
     }
 

@@ -26,6 +26,19 @@ public class MRP {
         Injector.INSTANCE.register(UserService.class, UserServiceImpl.class);
         Injector.INSTANCE.register(MediaService.class, MediaServiceImpl.class);
         Injector.INSTANCE.register(RatingService.class, RatingServiceImpl.class);
-        RestServer.INSTANCE.start();
+        MainServer.INSTANCE.restServer.start();
+    }
+
+    public enum MainServer {
+        INSTANCE;
+        private final RestServer restServer;
+
+        MainServer() {
+            this.restServer = new RestServer();
+        }
+
+        public RestServer getRestServer() {
+            return restServer;
+        }
     }
 }

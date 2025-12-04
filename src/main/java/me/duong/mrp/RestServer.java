@@ -15,16 +15,19 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
-public enum RestServer {
-    INSTANCE;
+public class RestServer {
     private final Map<Mapping, Consumer<Request>> controllers = new HashMap<>();
     private final HttpServer server;
 
-    RestServer() {
+    public RestServer() {
+        this(8080);
+    }
+
+    public RestServer(int port) {
         try {
             initControllers();
 
-            server = HttpServer.create(new InetSocketAddress(8080), 0);
+            server = HttpServer.create(new InetSocketAddress(port), 0);
 
             server.createContext("/", new DefaultHttpHandler());
             server.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
@@ -36,7 +39,7 @@ public enum RestServer {
     public void start() {
         if (server != null) {
             server.start();
-            Logger.info("Server running on port 8080...");
+            Logger.info("Server running on port %d...", server.getAddress().getPort());
         }
     }
 
@@ -100,7 +103,7 @@ public enum RestServer {
         } catch (IllegalAccessException | InvocationTargetException exception) {
             exception.printStackTrace(System.err);
             Logger.error("Method %s failed!", method.toGenericString());
-            Responders.sendResponse(request, 500);
+            Responders.sendResponse(request, HttpStatusCode.INTERNAL_SERVER_ERROR);
         }
     }
 }
