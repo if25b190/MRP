@@ -123,6 +123,20 @@ public class Media extends Entity<Integer> implements BaseValidator {
         return obj instanceof Media media && Objects.equals(media.getId(), this.getId());
     }
 
+    public Media cloneMedia() {
+        return new Media()
+                .setId(this.getId())
+                .setUserId(this.getUserId())
+                .setTitle(this.getTitle())
+                .setDescription(this.getDescription())
+                .setMediaType(this.getMediaType())
+                .setReleaseYear(this.getReleaseYear())
+                .setGenres(this.getGenres())
+                .setRatings(this.getRatings())
+                .setScore(this.getScore())
+                .setAgeRestriction(this.getAgeRestriction());
+    }
+
     @Override
     public boolean validate() {
         return title != null && !title.isBlank() &&

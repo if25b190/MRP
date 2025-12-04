@@ -1,6 +1,7 @@
 package me.duong.mrp.utils.parser;
 
 import me.duong.mrp.model.BaseValidator;
+import me.duong.mrp.presentation.HttpStatusCode;
 import me.duong.mrp.presentation.Request;
 import me.duong.mrp.presentation.Responders;
 
@@ -11,14 +12,14 @@ public class Guards {
         if (value.isPresent() && value.get().validate()) {
             return true;
         }
-        Responders.sendResponse(request, 400);
+        Responders.sendResponse(request, HttpStatusCode.BAD_REQUEST);
         return false;
     }
     public static int verifyWildcardInt(Request request, String key) {
         if (request.wildcards().get(key).matches("[0-9]+")) {
             return Integer.parseInt(request.wildcards().get(key));
         }
-        Responders.sendResponse(request, 400);
+        Responders.sendResponse(request, HttpStatusCode.BAD_REQUEST);
         return -1;
     }
 }

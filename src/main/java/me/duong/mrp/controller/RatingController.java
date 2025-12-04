@@ -1,10 +1,7 @@
 package me.duong.mrp.controller;
 
 import me.duong.mrp.entity.Rating;
-import me.duong.mrp.presentation.Controller;
-import me.duong.mrp.presentation.Method;
-import me.duong.mrp.presentation.Request;
-import me.duong.mrp.presentation.Responders;
+import me.duong.mrp.presentation.*;
 import me.duong.mrp.service.RatingService;
 import me.duong.mrp.utils.Injector;
 import me.duong.mrp.utils.parser.DtoReader;
@@ -27,9 +24,9 @@ public class RatingController {
         var result = service.createRating(rating);
         if (result.isPresent()) {
             String response = DtoWriter.writeJson(result.get());
-            Responders.sendResponse(request, 201, response);
+            Responders.sendResponse(request, HttpStatusCode.CREATED, response);
         } else {
-            Responders.sendResponse(request, 400);
+            Responders.sendResponse(request, HttpStatusCode.BAD_REQUEST);
         }
     }
 
@@ -39,7 +36,7 @@ public class RatingController {
         if (id == -1) return;
         var service = Injector.INSTANCE.resolve(RatingService.class);
         var result = service.likeRating(id, request.userId());
-        Responders.sendResponse(request, result ? 200 : 400);
+        Responders.sendResponse(request, result ? HttpStatusCode.OK : HttpStatusCode.BAD_REQUEST);
     }
 
     @Controller(path = "/api/ratings/:id", method = Method.PUT)
@@ -56,7 +53,7 @@ public class RatingController {
         var service = Injector.INSTANCE.resolve(RatingService.class);
         var result = service.updateRating(rating);
         String response = DtoWriter.writeJson(result);
-        Responders.sendResponse(request, 200, response);
+        Responders.sendResponse(request, HttpStatusCode.OK, response);
     }
 
     @Controller(path = "/api/ratings/:id", method = Method.DELETE)
@@ -64,8 +61,8 @@ public class RatingController {
         var id = Guards.verifyWildcardInt(request, "id");
         if (id == -1) return;
         var service = Injector.INSTANCE.resolve(RatingService.class);
-        service.deleteRating(id, request.userId());
-        Responders.sendResponse(request, 204);
+        var result = service.deleteRating(id, request.userId());
+        Responders.sendResponse(request, result ? HttpStatusCode.NO_CONTENT : HttpStatusCode.NOT_FOUND);
     }
 
     @Controller(path = "/api/ratings/:id/confirm", method = Method.POST)
@@ -74,6 +71,6 @@ public class RatingController {
         if (id == -1) return;
         var service = Injector.INSTANCE.resolve(RatingService.class);
         var result = service.confirmRatingComment(id, request.userId());
-        Responders.sendResponse(request, result ? 200 : 400);
+        Responders.sendResponse(request, result ? HttpStatusCode.OK : HttpStatusCode.BAD_REQUEST);
     }
 }

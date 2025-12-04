@@ -1,13 +1,10 @@
 package me.duong.mrp.controller;
 
 import me.duong.mrp.entity.User;
-import me.duong.mrp.service.MediaService;
+import me.duong.mrp.presentation.*;
 import me.duong.mrp.service.UserService;
-import me.duong.mrp.presentation.Controller;
-import me.duong.mrp.presentation.Method;
-import me.duong.mrp.presentation.Request;
-import me.duong.mrp.presentation.Responders;
 import me.duong.mrp.utils.Injector;
+import me.duong.mrp.utils.Logger;
 import me.duong.mrp.utils.parser.DtoReader;
 import me.duong.mrp.utils.parser.DtoWriter;
 import me.duong.mrp.utils.parser.Guards;
@@ -23,9 +20,9 @@ public class UserController {
         var service = Injector.INSTANCE.resolve(UserService.class);
         var result = service.registerUser(login);
         if (result.isPresent()) {
-            Responders.sendResponse(request, 201);
+            Responders.sendResponse(request, HttpStatusCode.CREATED);
         } else {
-            Responders.sendResponse(request, 400);
+            Responders.sendResponse(request, HttpStatusCode.BAD_REQUEST);
         }
     }
 
@@ -39,9 +36,9 @@ public class UserController {
         var service = Injector.INSTANCE.resolve(UserService.class);
         var result = service.loginUser(login);
         if (result.isPresent()) {
-            Responders.sendResponse(request, 200, String.format("{\"token\": \"%s\"}", result.get()));
+            Responders.sendResponse(request, HttpStatusCode.OK, String.format("{\"token\": \"%s\"}", result.get()));
         } else {
-            Responders.sendResponse(request, 400);
+            Responders.sendResponse(request, HttpStatusCode.BAD_REQUEST);
         }
     }
 
@@ -53,9 +50,9 @@ public class UserController {
         var result = service.getUserById(id);
         if (result.isPresent()) {
             var response = DtoWriter.writeJson(result.get());
-            Responders.sendResponse(request, 200, response);
+            Responders.sendResponse(request, HttpStatusCode.OK, response);
         } else {
-            Responders.sendResponse(request, 404);
+            Responders.sendResponse(request, HttpStatusCode.NOT_FOUND);
         }
     }
 
@@ -63,7 +60,7 @@ public class UserController {
     public static void updateUserProfile(Request request) {
         var dto = DtoReader.readJson(request.body(), User.class);
         if (dto.isEmpty()) {
-            Responders.sendResponse(request, 400);
+            Responders.sendResponse(request, HttpStatusCode.BAD_REQUEST);
             return;
         }
         var user = dto.get();
@@ -72,9 +69,9 @@ public class UserController {
         var result = service.updateUser(dto.get());
         if (result.isPresent()) {
             var response = DtoWriter.writeJson(result.get());
-            Responders.sendResponse(request, 200, response);
+            Responders.sendResponse(request, HttpStatusCode.OK, response);
         } else {
-            Responders.sendResponse(request, 400);
+            Responders.sendResponse(request, HttpStatusCode.BAD_REQUEST);
         }
     }
 
@@ -85,7 +82,7 @@ public class UserController {
         var service = Injector.INSTANCE.resolve(UserService.class);
         var result = service.getUserRatingHistory(id, request.userId());
         var response = DtoWriter.writeJson(result);
-        Responders.sendResponse(request, 200, response);
+        Responders.sendResponse(request, HttpStatusCode.OK, response);
     }
 
     @Controller(path = "/api/users/:id/favorites")
@@ -95,19 +92,19 @@ public class UserController {
         var service = Injector.INSTANCE.resolve(UserService.class);
         var result = service.getUserFavorites(id, request.userId());
         var response = DtoWriter.writeJson(result);
-        Responders.sendResponse(request, 200, response);
+        Responders.sendResponse(request, HttpStatusCode.OK, response);
     }
 
     @Controller(path = "/api/users/:id/recommendations")
     public static void getUserRecommendations(Request request) {
         var type = request.query().get("type");
-        if (type.isEmpty()) {
-            Responders.sendResponse(request, 400);
+        if (type == null || type.isEmpty()) {
+            Responders.sendResponse(request, HttpStatusCode.BAD_REQUEST);
             return;
         }
         var service = Injector.INSTANCE.resolve(UserService.class);
         var result = service.getUserRecommendations(request.userId(), type.getFirst());
         var response = DtoWriter.writeJson(result);
-        Responders.sendResponse(request, 200, response);
+        Responders.sendResponse(request, HttpStatusCode.OK, response);
     }
 }
