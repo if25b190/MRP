@@ -7,6 +7,7 @@ import me.duong.mrp.model.MediaType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Media extends Entity<Integer> implements BaseValidator {
     private int userId;
@@ -115,6 +116,25 @@ public class Media extends Entity<Integer> implements BaseValidator {
     public Media setScore(float score) {
         this.score = score;
         return this;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Media media && Objects.equals(media.getId(), this.getId());
+    }
+
+    public Media cloneMedia() {
+        return new Media()
+                .setId(this.getId())
+                .setUserId(this.getUserId())
+                .setTitle(this.getTitle())
+                .setDescription(this.getDescription())
+                .setMediaType(this.getMediaType())
+                .setReleaseYear(this.getReleaseYear())
+                .setGenres(this.getGenres())
+                .setRatings(this.getRatings())
+                .setScore(this.getScore())
+                .setAgeRestriction(this.getAgeRestriction());
     }
 
     @Override

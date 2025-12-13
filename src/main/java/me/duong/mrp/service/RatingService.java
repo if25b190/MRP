@@ -10,7 +10,7 @@ public interface RatingService {
 
     Optional<Rating> updateRating(Rating rating);
 
-    void deleteRating(int id, int userId);
+    boolean deleteRating(int id, int userId);
 
     boolean likeRating(int id, int userId);
 

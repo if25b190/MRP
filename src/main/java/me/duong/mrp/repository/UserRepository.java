@@ -2,12 +2,15 @@ package me.duong.mrp.repository;
 
 import me.duong.mrp.entity.User;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository {
     Optional<User> findUserById(int id);
 
     Optional<User> findUserByUsername(String username);
+
+    List<User> findLeaderboard();
 
     User insertUser(User user);
 

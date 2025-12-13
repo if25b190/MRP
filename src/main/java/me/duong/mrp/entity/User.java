@@ -12,6 +12,8 @@ public class User extends Entity<Integer> implements BaseValidator {
     private String password;
     private String salt;
     private String favoriteGenre;
+    private int totalRatings;
+    private float averageScore;
 
     @Override
     public User setId(Integer id) {
@@ -68,6 +70,28 @@ public class User extends Entity<Integer> implements BaseValidator {
     @JsonProperty("favoriteGenre")
     public User setFavoriteGenre(String favoriteGenre) {
         this.favoriteGenre = favoriteGenre;
+        return this;
+    }
+
+    @JsonProperty("totalRatings")
+    public int getTotalRatings() {
+        return totalRatings;
+    }
+
+    @JsonIgnore
+    public User setTotalRatings(int totalRatings) {
+        this.totalRatings = totalRatings;
+        return this;
+    }
+
+    @JsonProperty("averageScore")
+    public float getAverageScore() {
+        return averageScore;
+    }
+
+    @JsonIgnore
+    public User setAverageScore(float averageScore) {
+        this.averageScore = averageScore;
         return this;
     }
 

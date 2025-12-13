@@ -13,10 +13,12 @@ import me.duong.mrp.service.impl.UserServiceImpl;
 import me.duong.mrp.utils.Injector;
 
 import java.sql.Connection;
+import java.util.function.Supplier;
 
 public class MRP {
     public static void main(String[] args) {
-        Injector.INSTANCE.register(Connection.class, DbConnection.INSTANCE.getConnection());
+        Supplier<Connection> connection = DbConnection.INSTANCE::getConnection;
+        Injector.INSTANCE.register(Connection.class, connection);
         Injector.INSTANCE.register(DbSession.class, DbSession.class);
         Injector.INSTANCE.register(UserRepository.class, UserRepositoryImpl.class);
         Injector.INSTANCE.register(MediaRepository.class, MediaRepositoryImpl.class);
@@ -24,6 +26,19 @@ public class MRP {
         Injector.INSTANCE.register(UserService.class, UserServiceImpl.class);
         Injector.INSTANCE.register(MediaService.class, MediaServiceImpl.class);
         Injector.INSTANCE.register(RatingService.class, RatingServiceImpl.class);
-        RestServer.INSTANCE.start();
+        MainServer.INSTANCE.restServer.start();
+    }
+
+    public enum MainServer {
+        INSTANCE;
+        private final RestServer restServer;
+
+        MainServer() {
+            this.restServer = new RestServer();
+        }
+
+        public RestServer getRestServer() {
+            return restServer;
+        }
     }
 }

@@ -53,10 +53,14 @@ public class MediaServiceImpl extends BaseService implements MediaService {
     }
 
     @Override
-    public void deleteMedia(int id, int userId) {
-        super.callDbSessionWithoutReturn(session -> {
+    public boolean deleteMedia(int id, int userId) {
+        return super.callDbSession(session -> {
             MediaRepository repository = Injector.INSTANCE.resolve(MediaRepository.class, session);
+            if (repository.findMediaById(id).isEmpty()) {
+                return false;
+            }
             repository.deleteMedia(id, userId);
+            return true;
         });
     }
 

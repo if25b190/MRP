@@ -2,6 +2,7 @@ package me.duong.mrp.service.impl;
 
 import me.duong.mrp.entity.Media;
 import me.duong.mrp.entity.Rating;
+import me.duong.mrp.model.MediaFilter;
 import me.duong.mrp.repository.*;
 import me.duong.mrp.service.BaseService;
 import me.duong.mrp.service.UserService;
@@ -10,16 +11,28 @@ import me.duong.mrp.utils.security.TokenStore;
 import me.duong.mrp.entity.User;
 import me.duong.mrp.utils.security.HashingUtils;
 
-import java.util.Base64;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class UserServiceImpl extends BaseService implements UserService {
     @Override
     public Optional<User> getUserById(int id) {
         return super.callDbSession(session -> {
             UserRepository repository = Injector.INSTANCE.resolve(UserRepository.class, session);
-            return repository.findUserById(id);
+            var result = repository.findUserById(id);
+            if (result.isPresent()) {
+                RatingRepository ratingRepository = Injector.INSTANCE.resolve(RatingRepository.class, session);
+                var ratingHistory = ratingRepository.findUserRatings(id);
+                result.get().setTotalRatings(ratingHistory.size());
+                result.get().setAverageScore((float) ratingHistory.stream()
+                        .map(Rating::getStars)
+                        .mapToInt(Integer::intValue)
+                        .average()
+                        .orElse(0.0f)
+                );
+            }
+            return result;
         });
     }
 
@@ -102,6 +115,87 @@ public class UserServiceImpl extends BaseService implements UserService {
                     .setSalt(Base64.getEncoder().encodeToString(salt));
             return Optional.of(userRepository.insertUser(user));
         });
+    }
+
+    @Override
+    public List<Media> getUserRecommendations(int userId, String type) {
+        var ratingHistory = getUserRatingHistory(userId, userId);
+        var userFavorites = getUserFavorites(userId, userId);
+        return super.callDbSession(session -> {
+            var mediaRepository = Injector.INSTANCE.resolve(MediaRepository.class, session);
+            var data = mediaRepository.findAllMedia(MediaFilter.fromQuery(Map.of()));
+            return switch (type) {
+                case "genre" -> {
+                    var highlyRated = ratingHistory
+                            .stream()
+                            .filter(rating -> rating.getStars() >= 3)
+                            .sorted(Comparator.comparingInt(Rating::getStars).reversed())
+                            .limit(10)
+                            .map(Rating::getMediaId)
+                            .toList();
+                    var targetGenres = data.stream()
+                            .filter(media -> highlyRated.contains(media.getId()))
+                            .flatMap(media -> media.getGenres().stream().map(String::toLowerCase))
+                            .collect(Collectors.toSet());
+                    yield data.stream()
+                            .filter(media ->
+                                    !isAlreadyWatchedByUser(media, userFavorites, ratingHistory) &&
+                                            (double) media.getGenres()
+                                                    .stream()
+                                                    .filter(genre ->
+                                                            targetGenres.contains(genre.toLowerCase()))
+                                                    .count()
+                                                    / Math.min(media.getGenres().size(), targetGenres.size())
+                                                    >= 0.5)
+                            .toList();
+                }
+                case "content" -> {
+                    var userMediaList = data.stream()
+                            .filter(media -> isAlreadyWatchedByUser(media, userFavorites, ratingHistory))
+                            .toList();
+                    yield data.stream()
+                            .filter(media -> !isAlreadyWatchedByUser(media, userFavorites, ratingHistory) &&
+                                    userMediaList.stream().anyMatch(userMedia -> {
+                                        var similarAgeRes = userMedia.getAgeRestriction() == media.getAgeRestriction();
+                                        var similarMediaType = userMedia.getMediaType().equals(media.getMediaType());
+                                        var similarGenres = (double) userMedia.getGenres()
+                                                .stream()
+                                                .filter(genre ->
+                                                        media.getGenres().contains(genre.toLowerCase()))
+                                                .count()
+                                                / Math.min(userMedia.getGenres().size(), media.getGenres().size())
+                                                >= 0.5;
+                                        return Stream.of(similarAgeRes, similarMediaType, similarGenres)
+                                                .filter(s -> s)
+                                                .count() >= 2;
+                                    }))
+                            .toList();
+                }
+                default -> List.of();
+            };
+        });
+    }
+
+    public List<User> getLeaderboard() {
+        return super.callDbSession(session -> {
+            UserRepository repository = Injector.INSTANCE.resolve(UserRepository.class, session);
+            RatingRepository ratingRepository = Injector.INSTANCE.resolve(RatingRepository.class, session);
+            return repository.findLeaderboard().stream().peek(user -> {
+                var ratingHistory = ratingRepository.findUserRatings(user.getId());
+                user.setTotalRatings(ratingHistory.size());
+                user.setAverageScore((float) ratingHistory.stream()
+                        .map(Rating::getStars)
+                        .mapToInt(Integer::intValue)
+                        .average()
+                        .orElse(0.0f)
+                );
+            }).toList();
+        });
+    }
+
+    private boolean isAlreadyWatchedByUser(Media media, List<Media> mediaList, List<Rating> ratings) {
+        return mediaList.contains(media) ||
+                ratings.stream().anyMatch(rating -> rating.getMediaId() == media.getId());
     }
 
 }

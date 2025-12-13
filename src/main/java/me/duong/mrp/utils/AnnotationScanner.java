@@ -1,7 +1,5 @@
 package me.duong.mrp.utils;
 
-import me.duong.mrp.MRP;
-
 import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;

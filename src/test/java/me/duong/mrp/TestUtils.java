@@ -10,8 +10,8 @@ import java.net.URI;
 import java.time.OffsetDateTime;
 
 public class TestUtils {
-    public static URI getUri(String path) {
-        return URI.create(RestServer.INSTANCE.pathToUrl(path));
+    public static URI getUri(RestServer restServer, String path) {
+        return URI.create(restServer.pathToUrl(path));
     }
     public static ObjectWriter publicWriter() {
         var mapper = new ObjectMapper();

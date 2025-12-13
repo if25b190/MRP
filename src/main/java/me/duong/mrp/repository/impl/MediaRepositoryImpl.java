@@ -8,6 +8,7 @@ import me.duong.mrp.utils.Logger;
 import me.duong.mrp.entity.Media;
 import me.duong.mrp.model.MediaFilter;
 
+import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -72,7 +73,8 @@ public class MediaRepositoryImpl extends BaseRepository<Media> implements MediaR
             prepared.setString(3, media.getDescription());
             prepared.setString(4, media.getMediaType());
             prepared.setInt(5, media.getReleaseYear());
-            prepared.setString(6, String.join(",", media.getGenres()));
+            var genres = session.createArray("VARCHAR", media.getGenres().toArray(new String[0]));
+            prepared.setArray(6, genres);
             prepared.setInt(7, media.getAgeRestriction());
         });
     }
@@ -87,7 +89,8 @@ public class MediaRepositoryImpl extends BaseRepository<Media> implements MediaR
             prepared.setString(2, media.getDescription());
             prepared.setString(3, media.getMediaType());
             prepared.setInt(4, media.getReleaseYear());
-            prepared.setString(5, String.join(",", media.getGenres()));
+            var genres = session.createArray("VARCHAR", media.getGenres().toArray(new String[0]));
+            prepared.setArray(5, genres);
             prepared.setInt(6, media.getAgeRestriction());
             prepared.setInt(7, media.getId());
             prepared.setInt(8, media.getUserId());
@@ -147,8 +150,7 @@ public class MediaRepositoryImpl extends BaseRepository<Media> implements MediaR
                     .setDescription(result.getString("description"))
                     .setMediaType(result.getString("media_type"))
                     .setReleaseYear(result.getInt("release_year"))
-                    .setGenres(result.getString("genres") == null ?
-                            null : List.of(result.getString("genres").split(",")))
+                    .setGenres(List.of((String[]) result.getArray("genres").getArray()))
                     .setAgeRestriction(result.getInt("age_restriction"))
                     .setScore(result.getFloat("rating"));
         } catch (SQLException exception) {

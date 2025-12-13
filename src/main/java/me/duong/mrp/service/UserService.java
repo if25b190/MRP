@@ -19,4 +19,8 @@ public interface UserService {
     Optional<String> loginUser(User loginDto);
 
     Optional<User> registerUser(User loginDto);
+
+    List<Media> getUserRecommendations(int userId, String type);
+
+    List<User> getLeaderboard();
 }

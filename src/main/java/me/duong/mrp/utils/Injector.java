@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public enum Injector {
     INSTANCE;
@@ -21,6 +22,9 @@ public enum Injector {
                     var parameters = Arrays.stream(args).map(Object::getClass).toArray(Class[]::new);
                     var instance = valueClass.getDeclaredConstructor(parameters).newInstance(args);
                     return clazz.cast(instance);
+                }
+                if (value instanceof Supplier<?> supplier) {
+                    return clazz.cast(supplier.get());
                 }
                 return clazz.cast(value);
             }

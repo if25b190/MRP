@@ -3,6 +3,7 @@ package me.duong.mrp.presentation;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import me.duong.mrp.MRP;
 import me.duong.mrp.RestServer;
 import me.duong.mrp.utils.Logger;
 import me.duong.mrp.utils.security.TokenStore;
@@ -48,7 +49,7 @@ public class DefaultHttpHandler implements HttpHandler {
     }
 
     private Stream<Map.Entry<Mapping, Consumer<Request>>> filteredControllers(String method, String path) {
-        return RestServer.INSTANCE.getControllers().entrySet()
+        return MRP.MainServer.INSTANCE.getRestServer().getControllers().entrySet()
                 .stream()
                 .filter(entry ->
                         entry.getKey().method().name().equalsIgnoreCase(method) &&
