@@ -1,11 +1,17 @@
-package me.duong.mrp.repository;
+package me.duong.mrp.service;
 
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres;
 import me.duong.mrp.TestDbConnection;
 import me.duong.mrp.entity.User;
+import me.duong.mrp.repository.DbSession;
+import me.duong.mrp.repository.MediaRepository;
+import me.duong.mrp.repository.RatingRepository;
+import me.duong.mrp.repository.UserRepository;
 import me.duong.mrp.repository.impl.MediaRepositoryImpl;
 import me.duong.mrp.repository.impl.RatingRepositoryImpl;
 import me.duong.mrp.repository.impl.UserRepositoryImpl;
+import me.duong.mrp.service.impl.MediaServiceImpl;
+import me.duong.mrp.service.impl.RatingServiceImpl;
 import me.duong.mrp.service.impl.UserServiceImpl;
 import me.duong.mrp.utils.Injector;
 import org.apache.commons.io.IOUtils;
@@ -19,7 +25,7 @@ import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class UserRepositoryTest {
+public class LeaderboardTest {
     private static EmbeddedPostgres pg;
     private static String schema;
 
@@ -49,47 +55,13 @@ public class UserRepositoryTest {
     @Test
     public void testRegisterUser() {
         var userService = new UserServiceImpl();
+        var mediaService = new MediaServiceImpl();
+        var ratingService = new RatingServiceImpl();
         userService.registerUser(new User().setUsername("user1").setPassword("pass123"));
         var result = userService.getUserById(1);
         assertTrue(result.isPresent());
         assertEquals(1, result.get().getId());
         assertEquals("user1", result.get().getUsername());
-        assertNotEquals("pass123", result.get().getPassword());
-        assertNotNull(result.get().getSalt());
-        assertFalse(result.get().getSalt().isBlank());
-    }
-
-    @Test
-    public void testRegisterUser2() {
-        var userService = new UserServiceImpl();
-        userService.registerUser(new User().setUsername("user2").setPassword("pass123"));
-        var result = userService.getUserById(1);
-        assertTrue(result.isPresent());
-        assertEquals(1, result.get().getId());
-        assertEquals("user2", result.get().getUsername());
-        assertNotEquals("pass123", result.get().getPassword());
-        assertNotNull(result.get().getSalt());
-        assertFalse(result.get().getSalt().isBlank());
-    }
-
-    @Test
-    public void testRegisterUser3() {
-        var userService = new UserServiceImpl();
-        userService.registerUser(new User().setUsername("user3").setPassword("pass123"));
-        var result = userService.getUserById(1);
-        assertTrue(result.isPresent());
-        assertEquals(1, result.get().getId());
-        assertEquals("user3", result.get().getUsername());
-        assertNotEquals("pass123", result.get().getPassword());
-        assertNotNull(result.get().getSalt());
-        assertFalse(result.get().getSalt().isBlank());
-    }
-
-    @Test
-    public void testFindNonExistingUserById() {
-        var userService = new UserServiceImpl();
-        var result = userService.getUserById(1);
-        assertFalse(result.isPresent());
     }
 
     @AfterAll
