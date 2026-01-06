@@ -2,7 +2,10 @@ package me.duong.mrp.service;
 
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres;
 import me.duong.mrp.TestDbConnection;
+import me.duong.mrp.entity.Media;
+import me.duong.mrp.entity.Rating;
 import me.duong.mrp.entity.User;
+import me.duong.mrp.model.MediaType;
 import me.duong.mrp.repository.DbSession;
 import me.duong.mrp.repository.MediaRepository;
 import me.duong.mrp.repository.RatingRepository;
@@ -10,6 +13,8 @@ import me.duong.mrp.repository.UserRepository;
 import me.duong.mrp.repository.impl.MediaRepositoryImpl;
 import me.duong.mrp.repository.impl.RatingRepositoryImpl;
 import me.duong.mrp.repository.impl.UserRepositoryImpl;
+import me.duong.mrp.service.impl.MediaServiceImpl;
+import me.duong.mrp.service.impl.RatingServiceImpl;
 import me.duong.mrp.service.impl.UserServiceImpl;
 import me.duong.mrp.utils.Injector;
 import org.apache.commons.io.IOUtils;
@@ -19,6 +24,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -68,6 +74,162 @@ public class UserServiceTest {
         var userService = new UserServiceImpl();
         var result = userService.getUserById(1);
         assertFalse(result.isPresent());
+    }
+
+    @Test
+    public void testRecommendationGenre() {
+        var userService = new UserServiceImpl();
+        var mediaService = new MediaServiceImpl();
+        var ratingService = new RatingServiceImpl();
+
+        userService.registerUser(new User().setUsername("user1").setPassword("pass123"));
+        var result = userService.getUserById(1);
+        assertTrue(result.isPresent());
+        assertEquals(1, result.get().getId());
+        assertEquals("user1", result.get().getUsername());
+
+        var media1 = mediaService.createMedia(new Media()
+                .setUserId(result.get().getId())
+                .setTitle("Test")
+                .setMediaType(MediaType.MOVIE.name())
+                .setReleaseYear(2010)
+                .setGenres(List.of("sci-fi", "action"))
+                .setAgeRestriction(16));
+        var media2 = mediaService.createMedia(new Media()
+                .setUserId(result.get().getId())
+                .setTitle("Test 2")
+                .setMediaType(MediaType.SERIES.name())
+                .setReleaseYear(2010)
+                .setGenres(List.of("romance", "school", "sci-fi"))
+                .setAgeRestriction(0));
+
+        ratingService.createRating(new Rating()
+                .setUserId(result.get().getId())
+                .setMediaId(media1.getId())
+                .setStars(5)
+                .setComment("Amazing movie!")
+                .setConfirmed(false));
+
+        var recommendations = userService.getUserRecommendations(result.get().getId(), "genre");
+        assertEquals(1, recommendations.size());
+        assertEquals(media2, recommendations.getFirst());
+    }
+
+    @Test
+    public void testRecommendationGenreNoneMatching() {
+        var userService = new UserServiceImpl();
+        var mediaService = new MediaServiceImpl();
+        var ratingService = new RatingServiceImpl();
+
+        userService.registerUser(new User().setUsername("user1").setPassword("pass123"));
+        var result = userService.getUserById(1);
+        assertTrue(result.isPresent());
+        assertEquals(1, result.get().getId());
+        assertEquals("user1", result.get().getUsername());
+
+        var media1 = mediaService.createMedia(new Media()
+                .setUserId(result.get().getId())
+                .setTitle("Test")
+                .setMediaType(MediaType.MOVIE.name())
+                .setReleaseYear(2010)
+                .setGenres(List.of("sci-fi", "action"))
+                .setAgeRestriction(16));
+        var media2 = mediaService.createMedia(new Media()
+                .setUserId(result.get().getId())
+                .setTitle("Test 2")
+                .setMediaType(MediaType.SERIES.name())
+                .setReleaseYear(2010)
+                .setGenres(List.of("romance", "school", "fantasy"))
+                .setAgeRestriction(0));
+
+        ratingService.createRating(new Rating()
+                .setUserId(result.get().getId())
+                .setMediaId(media1.getId())
+                .setStars(5)
+                .setComment("Amazing movie!")
+                .setConfirmed(false));
+
+        var recommendations = userService.getUserRecommendations(result.get().getId(), "genre");
+        assertTrue(recommendations.isEmpty());
+    }
+
+    @Test
+    public void testRecommendationContent() {
+        var userService = new UserServiceImpl();
+        var mediaService = new MediaServiceImpl();
+        var ratingService = new RatingServiceImpl();
+
+        userService.registerUser(new User().setUsername("user1").setPassword("pass123"));
+        var result = userService.getUserById(1);
+        assertTrue(result.isPresent());
+        assertEquals(1, result.get().getId());
+        assertEquals("user1", result.get().getUsername());
+
+        var media1 = mediaService.createMedia(new Media()
+                .setUserId(result.get().getId())
+                .setTitle("Test")
+                .setMediaType(MediaType.MOVIE.name())
+                .setReleaseYear(2010)
+                .setGenres(List.of("sci-fi", "action"))
+                .setAgeRestriction(16));
+        var media2 = mediaService.createMedia(new Media()
+                .setUserId(result.get().getId())
+                .setTitle("Test 2")
+                .setMediaType(MediaType.MOVIE.name())
+                .setReleaseYear(2010)
+                .setGenres(List.of("romance", "school", "fantasy"))
+                .setAgeRestriction(16));
+
+        ratingService.createRating(new Rating()
+                .setUserId(result.get().getId())
+                .setMediaId(media1.getId())
+                .setStars(5)
+                .setComment("Amazing movie!")
+                .setConfirmed(false));
+
+        // matches 2 of 3: age restriction and media type but not genres
+        var recommendations = userService.getUserRecommendations(result.get().getId(), "content");
+        assertEquals(1, recommendations.size());
+        assertEquals(media2, recommendations.getFirst());
+    }
+
+    @Test
+    public void testRecommendationContentNoneMatching() {
+        var userService = new UserServiceImpl();
+        var mediaService = new MediaServiceImpl();
+        var ratingService = new RatingServiceImpl();
+
+        userService.registerUser(new User().setUsername("user1").setPassword("pass123"));
+        var result = userService.getUserById(1);
+        assertTrue(result.isPresent());
+        assertEquals(1, result.get().getId());
+        assertEquals("user1", result.get().getUsername());
+
+        var media1 = mediaService.createMedia(new Media()
+                .setUserId(result.get().getId())
+                .setTitle("Test")
+                .setMediaType(MediaType.MOVIE.name())
+                .setReleaseYear(2010)
+                .setGenres(List.of("sci-fi", "action"))
+                .setAgeRestriction(16));
+        var media2 = mediaService.createMedia(new Media()
+                .setUserId(result.get().getId())
+                .setTitle("Test 2")
+                .setMediaType(MediaType.SERIES.name())
+                .setReleaseYear(2010)
+                .setGenres(List.of("romance", "school", "sci-fi"))
+                .setAgeRestriction(0));
+
+        ratingService.createRating(new Rating()
+                .setUserId(result.get().getId())
+                .setMediaId(media1.getId())
+                .setStars(5)
+                .setComment("Amazing movie!")
+                .setConfirmed(false));
+
+        // only matches 1 of 3: genres but not age restriction and media type
+        var recommendations = userService.getUserRecommendations(result.get().getId(), "content");
+        assertEquals(0, recommendations.size());
     }
 
     @AfterAll
