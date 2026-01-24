@@ -17,6 +17,18 @@ public enum DbConnection {
                     "mrp"
             );
         } catch (SQLException exception) {
+            return getConnectionFallback();
+        }
+    }
+
+    private Connection getConnectionFallback() {
+        try {
+            return DriverManager.getConnection(
+                    "jdbc:postgresql://db/mrp",
+                    "mrp",
+                    "mrp"
+            );
+        } catch (SQLException exception) {
             Logger.error("Failed to create connection: %s", exception.getMessage());
             throw new DbException("Failed to create connection", exception);
         }
