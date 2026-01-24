@@ -181,6 +181,9 @@ public static ObjectWriter testingWriter() {
 }
 ```
 
+### Open-Closed Principle
+
+BaseRepository (Abstrakte Klasse) wird von mehreren Repositories (User, Media, Rating) geerbt und in deren Klassen die Funktionalität erweitert.
 
 ### Dependency Injection
 
@@ -265,14 +268,6 @@ und wo noch Unit Tests fehlen könnten.
 z.B: deckt der UserControllerTest derzeit nur einen if-Zweig ab.
 
 ![](img/img1.png)
-
-### Next Steps bis zum Final Hand-in
-
-- Es wäre besser, die Genres beim Media in eine Lookup-Tabelle auszulagern (dadurch kann man auch bestimmen, welche Tags erlaubt sind bzw. existieren)
-- Eventuell HttpStatus Enums hinzufügen statt Integers zu übergeben
-- Recommendations und Leaderboard fertig implementieren
-- mehr Unit-Tests für jeden Layer (Controller, Service, DAL/Repository) hinzufügen
-
 
 ### Postman Environment
 
