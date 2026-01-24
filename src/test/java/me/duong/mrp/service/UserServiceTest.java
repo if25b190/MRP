@@ -234,7 +234,7 @@ public class UserServiceTest {
 
     @AfterAll
     public static void afterAll() throws IOException {
-        pg.close();
+        if (pg != null) pg.close();
     }
 
     private static void resetDb(Connection connection) {
